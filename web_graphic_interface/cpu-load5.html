@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>PHASE — CPU Awareness Interface</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --green:  #1D9E75;
+  --blue:   #3B6FD8;
+  --red:    #E24B4A;
+  --orange: #BA7517;
+  --bg:     #eef2f6;
+  --panel-w: 340px;
+}
+
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 28px 20px 40px;
+  overflow-x: hidden;
+}
+
+/* ── HEADER ── */
+.app-header {
+  width: 100%;
+  max-width: 700px;
+  margin-bottom: 22px;
+  text-align: center;
+}
+.app-header h1 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  letter-spacing: .02em;
+  line-height: 1.4;
+}
+.app-header .subtitle {
+  margin-top: 5px;
+  font-size: 11.5px;
+  color: #6b7280;
+}
+.app-header .subtitle strong { color: #374151; }
+
+/* ── CPU BAR CARD ── */
+.cpu-bar-card {
+  width: 100%;
+  max-width: 640px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.07);
+  padding: 10px 18px;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  overflow: hidden;
+  max-height: 60px;
+  opacity: 1;
+  transition: max-height .4s cubic-bezier(.4,0,.2,1), opacity .4s, margin .4s, padding .4s;
+}
+.cpu-bar-card.hidden {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+.cpu-bar-lbl { font-size: 11px; font-weight: 700; color: #888; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; }
+.cpu-bar-track {
+  flex: 1;
+  height: 10px;
+  background: #f0f2f5;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.cpu-bar-fill {
+  height: 100%;
+  width: 5%;
+  background: var(--green);
+  border-radius: 6px;
+  transition: width .15s, background .3s;
+}
+.cpu-bar-pct { font-size: 13px; font-weight: 800; color: #1a1a2e; min-width: 38px; text-align: right; }
+
+/* toggle button */
+.cpu-toggle-row {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  max-width: 640px;
+  margin-bottom: 8px;
+}
+.cpu-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #888;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 3px 6px;
+  border-radius: 6px;
+  transition: color .15s, background .15s;
+}
+.cpu-toggle-btn:hover { color: #333; background: rgba(0,0,0,.05); }
+.cpu-toggle-btn .tog-eye { font-size: 13px; }
+
+/* ── VENN DIAGRAM ── */
+#venn {
+  position: relative;
+  width: 640px;
+  height: 460px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.10);
+  margin-bottom: 16px;
+  overflow: visible;
+}
+
+.circle {
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  transition: filter .3s, background .3s;
+}
+
+#left   { left: 120px; top: 80px;  background: rgba(59,111,216,0.28); }
+#right  { left: 260px; top: 80px;  background: rgba(220,70,70,0.28); }
+#bottom { left: 190px; top: 190px; background: rgba(29,158,117,0.28); }
+
+#left.active   { background: rgba(59,111,216,0.55); filter: drop-shadow(0 0 14px rgba(59,111,216,.5)); }
+#right.active  { background: rgba(220,70,70,0.55);  filter: drop-shadow(0 0 14px rgba(220,70,70,.5)); }
+#bottom.active { background: rgba(29,158,117,0.55); filter: drop-shadow(0 0 14px rgba(29,158,117,.5)); }
+
+.label {
+  position: absolute;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: .03em;
+  pointer-events: none;
+  z-index: 5;
+}
+#label-left   { left: 132px; top: 34px; color: var(--blue); }
+#label-right  { left: 365px; top: 34px; color: var(--red); }
+#label-bottom { left: 250px; top: 408px; color: var(--green); }
+
+/* Permanent pointer (always visible) */
+#pointer {
+  position: absolute;
+  width: 16px; height: 16px;
+  background: #1a1a2e;
+  border: 2.5px solid #fff;
+  border-radius: 50%;
+  cursor: grab;
+  z-index: 10;
+  transform: translate(-50%,-50%);
+  box-shadow: 0 2px 8px rgba(0,0,0,.35);
+  top: 50%; left: 50%;
+  transition: box-shadow .15s;
+}
+#pointer:active { cursor: grabbing; box-shadow: 0 4px 16px rgba(0,0,0,.45); }
+
+/* Zone status bar */
+#zone-status {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 20px;
+  min-height: 24px;
+}
+.zone-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 99px;
+  border: 1.5px solid transparent;
+  transition: all .25s;
+  opacity: .3;
+}
+.zone-pill.on { opacity: 1; }
+.zone-pill.blue  { border-color: var(--blue);  color: var(--blue);  background: rgba(59,111,216,.08); }
+.zone-pill.red   { border-color: var(--red);   color: var(--red);   background: rgba(220,70,70,.08); }
+.zone-pill.green { border-color: var(--green); color: var(--green); background: rgba(29,158,117,.08); }
+.zone-pill .zdot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: currentColor;
+}
+
+/* ── PANELS (shared) ── */
+.side-panel {
+  position: fixed;
+  top: 0;
+  height: 100vh;
+  width: var(--panel-w);
+  background: #fff;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: left .38s cubic-bezier(.4,0,.2,1), right .38s cubic-bezier(.4,0,.2,1);
+}
+
+/* RIGHT — sonification */
+#son-panel {
+  right: calc(-1 * var(--panel-w));
+  box-shadow: -6px 0 28px rgba(0,0,0,.12);
+  border-left: 1px solid #e8ecf2;
+}
+#son-panel.open { right: 0; }
+
+/* LEFT — mouse-speed */
+#mouse-panel {
+  left: calc(-1 * var(--panel-w));
+  box-shadow: 6px 0 28px rgba(0,0,0,.12);
+  border-right: 1px solid #e8ecf2;
+}
+#mouse-panel.open { left: 0; }
+
+/* Panel header */
+.panel-header {
+  padding: 16px 16px 13px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.panel-header-left { display: flex; align-items: center; gap: 10px; }
+.panel-icon {
+  width: 32px; height: 32px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; flex-shrink: 0;
+}
+.panel-header h2 { font-size: 13px; font-weight: 700; letter-spacing: .03em; }
+.panel-badge {
+  font-size: 9px; font-weight: 800; letter-spacing: .06em;
+  border-radius: 99px; padding: 2px 8px; text-transform: uppercase;
+  background: #eee; color: #999;
+  transition: background .3s, color .3s;
+}
+.panel-badge.on { }
+.btn-close {
+  background: none; border: none; cursor: pointer;
+  width: 28px; height: 28px; border-radius: 8px;
+  font-size: 16px; color: #aaa; display: flex; align-items: center; justify-content: center;
+  transition: background .15s, color .15s;
+}
+.btn-close:hover { background: #f0f0f2; color: #555; }
+
+/* son panel colors */
+#son-panel .panel-header  { background: linear-gradient(135deg, #edfaf4 0%, #f5fff9 100%); border-bottom: 1px solid #c8ecd4; }
+#son-panel .panel-icon    { background: rgba(29,158,117,.15); color: var(--green); }
+#son-panel .panel-header h2 { color: #145c35; }
+#son-panel .panel-badge.on  { background: #c6f0d9; color: #145c35; }
+
+/* mouse panel colors */
+#mouse-panel .panel-header  { background: linear-gradient(135deg, #eff4ff 0%, #f5f8ff 100%); border-bottom: 1px solid #c8d4ec; }
+#mouse-panel .panel-icon    { background: rgba(59,111,216,.12); color: var(--blue); }
+#mouse-panel .panel-header h2 { color: #1a2f6e; }
+#mouse-panel .panel-badge.on  { background: #d0d9f8; color: #1a2f6e; }
+
+/* Panel body */
+.panel-body { flex: 1; overflow-y: auto; padding: 16px; }
+
+/* Waveform canvas */
+#son-canvas {
+  display: block; width: 100%; height: 80px;
+  border-radius: 10px; background: #f7f9fb;
+  border: 1px solid #e8ecf2; margin-bottom: 14px;
+}
+/* Mouse speed canvas */
+#mouse-canvas {
+  display: block; width: 100%; height: 80px;
+  border-radius: 10px; background: #f0f4ff;
+  border: 1px solid #e8ecf2; margin-bottom: 14px;
+}
+
+/* Speed gauge */
+.gauge-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 0 10px;
+}
+.gauge-arc-svg { overflow: visible; }
+.gauge-value {
+  font-size: 26px; font-weight: 800; color: #1a1a2e; letter-spacing: -.02em;
+}
+.gauge-unit { font-size: 11px; color: #888; font-weight: 600; }
+.gauge-label { font-size: 11px; color: #aaa; margin-top: -4px; }
+
+/* Foot indicators */
+.foot-row { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; }
+.foot {
+  width: 20px; height: 30px;
+  border-radius: 9px 9px 5px 5px;
+  border: 1.5px solid #ddd;
+  transition: background .1s, transform .1s, border-color .1s;
+  background: transparent;
+}
+.foot.active { transform: translateY(-4px); border-color: transparent; }
+.foot-lbl { font-size: 11px; color: #aaa; }
+
+/* Section labels */
+.sec { font-size: 10px; font-weight: 800; color: #aaa; letter-spacing: .1em; text-transform: uppercase; margin: 14px 0 8px; }
+
+/* Control rows */
+.ctrl-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.ctrl-row label { font-size: 11.5px; color: #666; min-width: 105px; text-align: right; flex-shrink: 0; }
+.ctrl-row input[type=range] { flex: 1; width: auto; accent-color: var(--green); }
+.ctrl-row .vv { font-size: 11px; font-weight: 700; color: #333; min-width: 30px; }
+.ctrl-row select {
+  flex: 1; font-size: 11.5px;
+  border: 1px solid #e0e4eb; border-radius: 6px;
+  padding: 4px 6px; background: #f8f9fb; color: #333;
+  appearance: none;
+}
+
+/* Phase log */
+.phase-log {
+  font-size: 11px; color: #999; margin-bottom: 12px;
+  display: flex; align-items: center; gap: 6px;
+  background: #f8f9fb; border-radius: 8px; padding: 7px 10px;
+  min-height: 30px;
+}
+.phase-log .pdot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  background: transparent; transition: background .2s;
+}
+
+/* Sim pills */
+.sim-row { display: flex; flex-wrap: wrap; gap: 5px; }
+.sim-pill {
+  padding: 4px 10px; border-radius: 99px;
+  border: 1px solid #e0e4eb; background: #f8f9fb; color: #666;
+  font-size: 10px; font-weight: 700; cursor: pointer;
+  transition: all .12s; white-space: nowrap;
+}
+.sim-pill:hover { border-color: var(--green); color: var(--green); background: #edfaf2; }
+
+/* Panel footer */
+.panel-footer {
+  padding: 12px 16px;
+  border-top: 1px solid #f0f2f5;
+  display: flex; gap: 8px; flex-shrink: 0;
+}
+.pf-btn {
+  flex: 1; padding: 9px 0;
+  border-radius: 9px;
+  border: none;
+  cursor: pointer;
+  font-size: 12px; font-weight: 700;
+  transition: all .15s;
+  letter-spacing: .02em;
+}
+.pf-btn.start { background: linear-gradient(135deg, #1D9E75, #16c470); color: #fff; box-shadow: 0 3px 10px rgba(29,158,117,.3); }
+.pf-btn.start:hover { box-shadow: 0 5px 16px rgba(29,158,117,.45); transform: translateY(-1px); }
+.pf-btn.start-blue { background: linear-gradient(135deg, #3B6FD8, #5b8dee); color: #fff; box-shadow: 0 3px 10px rgba(59,111,216,.3); }
+.pf-btn.start-blue:hover { box-shadow: 0 5px 16px rgba(59,111,216,.45); transform: translateY(-1px); }
+.pf-btn.stop  { background: #fff; border: 1.5px solid #e24b4a; color: #e24b4a; }
+.pf-btn.stop:hover { background: #fef2f2; }
+.pf-btn:disabled { opacity: .35; cursor: default; transform: none !important; box-shadow: none !important; }
+
+/* Mouse speed display */
+.speed-display {
+  background: linear-gradient(135deg, #eff4ff, #f5f8ff);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 14px;
+  text-align: center;
+}
+.speed-big {
+  font-size: 36px;
+  font-weight: 900;
+  color: var(--blue);
+  letter-spacing: -.03em;
+  line-height: 1;
+  transition: color .3s;
+}
+.speed-unit { font-size: 12px; color: #aaa; font-weight: 600; margin-top: 2px; }
+.speed-bar-track {
+  margin-top: 10px;
+  height: 6px;
+  background: #dde6f5;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.speed-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--blue);
+  border-radius: 4px;
+  transition: width .1s, background .3s;
+}
+.speed-state-txt {
+  font-size: 11px; color: #aaa; margin-top: 6px;
+  min-height: 16px; transition: color .2s;
+}
+
+/* ── MOUSE DEVICE SELECTOR ── */
+.mouse-select-wrap {
+  margin-bottom: 10px;
+}
+.mouse-select-row {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+}
+.mouse-select-row select {
+  flex: 1;
+  font-size: 11.5px;
+  border: 1.5px solid #c8d4ec;
+  border-radius: 8px;
+  padding: 7px 10px;
+  background: #f5f8ff;
+  color: #1a2f6e;
+  appearance: none;
+  cursor: pointer;
+  transition: border-color .15s, box-shadow .15s;
+  outline: none;
+}
+.mouse-select-row select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(59,111,216,.12); }
+.mouse-refresh-btn {
+  flex-shrink: 0;
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  border: 1.5px solid #c8d4ec;
+  background: #f5f8ff;
+  color: var(--blue);
+  font-size: 15px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+}
+.mouse-refresh-btn:hover { background: #dde8ff; border-color: var(--blue); }
+.mouse-refresh-btn.spinning { animation: spin .6s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.mouse-select-status {
+  margin-top: 5px;
+  font-size: 10.5px;
+  min-height: 14px;
+  color: #aaa;
+  transition: color .2s;
+}
+.mouse-select-status.ok  { color: var(--green); }
+.mouse-select-status.err { color: var(--red); }
+
+/* hidden inputs still needed by JS */
+#ms-min, #ms-max, #ms-smooth { display: none; }
+
+/* ── THREAD CONTROL CARD ── */
+.thread-card {
+  width: 100%;
+  max-width: 640px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.07);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+.thread-card label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #555;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.thread-card input[type=range] {
+  flex: 1;
+  accent-color: var(--green);
+}
+.thread-count-badge {
+  font-size: 15px;
+  font-weight: 800;
+  color: #1a1a2e;
+  min-width: 28px;
+  text-align: right;
+}
+
+/* ── WS STATUS ── */
+.status-bar {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.ws-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #aaa;
+  background: #fff;
+  border: 1px solid #e8ecf2;
+  border-radius: 99px;
+  padding: 4px 14px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05);
+  transition: border-color .3s;
+}
+.ws-status.connected    { color: #1a5c2e; border-color: #c6f0d9; background: #f0fdf6; }
+.ws-status.disconnected { color: #7a1a1a; border-color: #fbc8c8; background: #fff5f5; }
+.status-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #E24B4A;
+  transition: background .4s;
+  flex-shrink: 0;
+}
+.status-dot.on  { background: #1D9E75; }
+.status-dot.off { background: #E24B4A; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<div class="app-header">
+  <h1>PHASE - Pseudo-Haptic And haptic feedback for Software Energy perception</h1>
+  <p class="subtitle">
+    <strong>CPU load</strong> received in real time via WebSocket &nbsp;·&nbsp;
+    <strong>Click + drag</strong> in the diagram → activate modalities
+  </p>
+</div>
+
+<!-- ── STATUS BAR ── -->
+<div class="status-bar">
+  <span class="ws-status disconnected" id="ws-badge">
+    <span class="status-dot off" id="ws-dot"></span>
+    <span id="ws-txt">WebSocket…</span>
+  </span>
+  <span class="ws-status disconnected" id="serial-badge">
+    <span class="status-dot off" id="serial-dot"></span>
+    <span id="serial-txt">Serial disconnected</span>
+  </span>
+</div>
+
+<!-- ── THREAD CONTROL ── -->
+<div class="thread-card">
+  <label>Threads</label>
+  <input id="threads" type="range" min="0" max="20" value="0">
+  <span class="thread-count-badge" id="threadCount">0</span>
+</div>
+
+<!-- ── CPU BAR ── -->
+<div class="cpu-toggle-row">
+  <button class="cpu-toggle-btn" onclick="toggleCpuBar()" id="cpu-toggle-btn">
+    <span class="tog-eye" id="cpu-eye">👁</span> CPU bar
+  </button>
+</div>
+<div class="cpu-bar-card" id="cpu-bar-wrap">
+  <span class="cpu-bar-lbl">CPU</span>
+  <div class="cpu-bar-track"><div class="cpu-bar-fill" id="cpu-bar-fill"></div></div>
+  <span class="cpu-bar-pct" id="cpu-bar-pct">0%</span>
+</div>
+
+<!-- ── VENN DIAGRAM ── -->
+<div id="venn">
+  <div id="label-left"   class="label">mouse-speed</div>
+  <div id="label-right"  class="label">thermals</div>
+  <div id="label-bottom" class="label">sonification</div>
+
+  <div id="left"   class="circle"></div>
+  <div id="right"  class="circle"></div>
+  <div id="bottom" class="circle"></div>
+
+  <div id="pointer"></div>
+</div>
+
+<!-- ── ZONE STATUS PILLS ── -->
+<div id="zone-status">
+  <span class="zone-pill blue" id="pill-mouse">
+    <span class="zdot"></span> Mouse Speed
+  </span>
+  <span class="zone-pill red" id="pill-thermals">
+    <span class="zdot"></span> Thermals
+  </span>
+  <span class="zone-pill green" id="pill-son">
+    <span class="zdot"></span> Sonification
+  </span>
+</div>
+
+<!-- ══════════════ RIGHT PANEL — Sonification ══════════════ -->
+<div id="son-panel" class="side-panel">
+  <div class="panel-header">
+    <div class="panel-header-left">
+      <div class="panel-icon">🎵</div>
+      <div>
+        <h2>CPU Sonification</h2>
+        <span class="panel-badge" id="panel-badge">INACTIF</span>
+      </div>
+    </div>
+    <button class="btn-close" id="btn-close-panel">✕</button>
+  </div>
+
+  <div class="panel-body">
+
+    <!-- Waveform canvas -->
+    <canvas id="son-canvas"></canvas>
+
+    <!-- Foot indicators -->
+    <div class="foot-row">
+      <span class="foot-lbl">Stride</span>
+      <div class="foot" id="foot-l" style="border-radius:9px 5px 5px 9px"></div>
+      <div class="foot" id="foot-r" style="border-radius:5px 9px 9px 5px"></div>
+      <span class="foot-lbl" id="foot-lbl">—</span>
+    </div>
+
+    <!-- Log -->
+    <div class="phase-log">
+      <span class="pdot" id="pdot"></span>
+      <span id="log-txt">Move the cursor into the circle to start.</span>
+    </div>
+
+    <!-- Controls -->
+    <div class="sec">Breathing</div>
+    <div class="ctrl-row">
+      <label>Style</label>
+      <select id="sel-breath">
+        <option value="run">Open mouth (running)</option>
+        <option value="nose">Nose (calm)</option>
+        <option value="panic">Hyperventilation</option>
+        <option value="deep">Deep (swimming)</option>
+      </select>
+    </div>
+    <div class="ctrl-row">
+      <label>Rest (breaths/min)</label>
+      <input type="range" id="brmin" min="6" max="20" value="12" step="1" oninput="document.getElementById('brmin-v').textContent=this.value">
+      <span class="vv" id="brmin-v">12</span>
+    </div>
+    <div class="ctrl-row">
+      <label>Sprint (breaths/min)</label>
+      <input type="range" id="brmax" min="30" max="80" value="60" step="1" oninput="document.getElementById('brmax-v').textContent=this.value">
+      <span class="vv" id="brmax-v">60</span>
+    </div>
+    <div class="ctrl-row">
+      <label>Breath volume</label>
+      <input type="range" id="bvol" min="0" max="100" value="70" step="1" oninput="document.getElementById('bvol-v').textContent=this.value+'%'">
+      <span class="vv" id="bvol-v">70%</span>
+    </div>
+
+    <div class="sec">Stride</div>
+    <div class="ctrl-row">
+      <label>Step style</label>
+      <select id="sel-steps">
+        <option value="run">Running stride</option>
+        <option value="walk">Walk</option>
+        <option value="treadmill">Treadmill</option>
+        <option value="gravel">Gravel</option>
+        <option value="none">None</option>
+      </select>
+    </div>
+    <div class="ctrl-row">
+      <label>Step volume</label>
+      <input type="range" id="svol" min="0" max="100" value="75" step="1" oninput="document.getElementById('svol-v').textContent=this.value+'%'">
+      <span class="vv" id="svol-v">75%</span>
+    </div>
+
+
+  </div>
+
+  <div class="panel-footer">
+    <button class="pf-btn start"  id="btn-son-start" onclick="startSon()">▶ Start</button>
+    <button class="pf-btn stop"   id="btn-son-stop"  onclick="stopSon()" disabled>■ Stop</button>
+  </div>
+</div>
+
+<!-- ══════════════ LEFT PANEL — Mouse Speed ══════════════ -->
+<div id="mouse-panel" class="side-panel">
+  <div class="panel-header">
+    <div class="panel-header-left">
+      <div class="panel-icon">🖱</div>
+      <div>
+        <h2>Mouse Speed</h2>
+        <span class="panel-badge" id="mouse-panel-badge">INACTIF</span>
+      </div>
+    </div>
+    <button class="btn-close" id="btn-close-mouse-panel">✕</button>
+  </div>
+
+  <div class="panel-body">
+
+    <!-- Speed visualisation -->
+    <div class="speed-display">
+      <div class="speed-big" id="mouse-speed-val">0</div>
+      <div class="speed-unit">px / s</div>
+      <div class="speed-bar-track">
+        <div class="speed-bar-fill" id="mouse-speed-bar"></div>
+      </div>
+      <div class="speed-state-txt" id="mouse-state-txt">Waiting…</div>
+    </div>
+
+    <!-- canvas trace -->
+    <canvas id="mouse-canvas"></canvas>
+
+    <!-- Mouse device selector -->
+    <div class="sec">Device</div>
+    <div class="mouse-select-wrap">
+      <div class="mouse-select-row">
+        <select id="mouse-device-select" onchange="onMouseDeviceChange(this.value)">
+          <option value="">— Loading… —</option>
+        </select>
+        <button class="mouse-refresh-btn" onclick="loadMouseNames()" title="Refresh">↻</button>
+      </div>
+      <div class="mouse-select-status" id="mouse-select-status"></div>
+    </div>
+
+    <!-- hidden range controls still used by JS for scaling -->
+    <input type="range" id="ms-min"    value="0"    min="0"   max="200">
+    <input type="range" id="ms-max"    value="1200" min="200" max="3000">
+    <input type="range" id="ms-smooth" value="8"    min="1"   max="20">
+
+  </div>
+
+  <div class="panel-footer">
+    <button class="pf-btn start-blue" id="btn-mouse-start" onclick="startMouseTracking()">▶ Start</button>
+    <button class="pf-btn stop"       id="btn-mouse-stop"  onclick="stopMouseTracking()" disabled>■ Stop</button>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════
+   WEBSOCKET — CPU LOAD (socket.io)
+═══════════════════════════════════════ */
+const socket = io('http://localhost:5000');
+
+function setWsBadge(connected) {
+  const badge = document.getElementById('ws-badge');
+  const dot   = document.getElementById('ws-dot');
+  const txt   = document.getElementById('ws-txt');
+  badge.className = 'ws-status ' + (connected ? 'connected' : 'disconnected');
+  dot.className   = 'status-dot ' + (connected ? 'on' : 'off');
+  txt.textContent = connected ? 'WebSocket OK' : 'WebSocket…';
+}
+
+function setSerialBadge(connected) {
+  const badge = document.getElementById('serial-badge');
+  const dot   = document.getElementById('serial-dot');
+  const txt   = document.getElementById('serial-txt');
+  badge.className = 'ws-status ' + (connected ? 'connected' : 'disconnected');
+  dot.className   = 'status-dot ' + (connected ? 'on' : 'off');
+  txt.textContent = connected ? 'Serial connected' : 'Serial disconnected';
+}
+
+socket.on('connect', () => {
+  console.log('[WS] connected to backend');
+  setWsBadge(true);
+});
+socket.on('disconnect', () => {
+  setWsBadge(false);
+  setSerialBadge(false);
+});
+socket.on('system_status', data => {
+  if (data.cpu !== undefined)             updateCPU(data.cpu);
+  if (data.serial_connected !== undefined) setSerialBadge(data.serial_connected);
+});
+
+function updateCPU(val) {
+  cpu = clamp(val, 0, 100);
+  const col = barColor(cpu);
+  document.getElementById('cpu-bar-fill').style.width  = cpu + '%';
+  document.getElementById('cpu-bar-fill').style.background = col;
+  document.getElementById('cpu-bar-pct').textContent   = Math.round(cpu) + '%';
+}
+
+/* ═══════════════════════════════════════
+   CPU WORKERS (real load via threads)
+═══════════════════════════════════════ */
+let workers = [];
+const slider     = document.getElementById('threads');
+const countLabel = document.getElementById('threadCount');
+
+function createWorker() {
+  const blob = new Blob([`while(true){Math.sqrt(Math.random()*1000);}`], {type:'application/javascript'});
+  return new Worker(URL.createObjectURL(blob));
+}
+function adjustWorkers(n) {
+  n = Math.max(0, Math.min(20, n));
+  while (workers.length < n) workers.push(createWorker());
+  while (workers.length > n) workers.pop().terminate();
+  slider.value = n;
+  countLabel.textContent = n;
+}
+slider.addEventListener('input', () => adjustWorkers(+slider.value));
+window.addEventListener('wheel', e => {
+  e.preventDefault();
+  adjustWorkers(workers.length + (e.deltaY < 0 ? 1 : -1));
+}, { passive: false });
+
+/* ═══════════════════════════════════════
+   CPU BAR TOGGLE
+═══════════════════════════════════════ */
+let cpuBarVisible = true;
+function toggleCpuBar() {
+  cpuBarVisible = !cpuBarVisible;
+  document.getElementById('cpu-bar-wrap').classList.toggle('hidden', !cpuBarVisible);
+  document.getElementById('cpu-eye').textContent = cpuBarVisible ? '👁' : '👁‍🗨';
+}
+
+/* ═══════════════════════════════════════
+   VENN INTERACTION
+═══════════════════════════════════════ */
+const venn    = document.getElementById('venn');
+const pointer = document.getElementById('pointer');
+let dragging  = false;
+
+// Centre géométrique initial du pointer (milieu du venn)
+pointer.style.left = '320px';
+pointer.style.top  = '230px';
+
+const circles = {
+  left:   { x: 250, y: 210, r: 130, endpoint: 'mouse/speed' },
+  right:  { x: 390, y: 210, r: 130, endpoint: 'thermal/gui'     },
+  bottom: { x: 320, y: 320, r: 130, endpoint: 'sonifier'    }
+};
+
+function inCircle(px, py, c) {
+  return Math.hypot(px - c.x, py - c.y) <= c.r;
+}
+function sendRest(endpoint, start) {
+  fetch(`http://localhost:5000/${endpoint}?start=${start}`, { method: 'GET' })
+    .then(r => r.json())
+    .catch(() => {});
+}
+
+let wasInSonZone   = false;
+let wasInMouseZone = false;
+let wasInRightZone = false;
+
+function evaluateZones(x, y) {
+  const inSon   = inCircle(x, y, circles.bottom);
+  const inMouse = inCircle(x, y, circles.left);
+  const inRight = inCircle(x, y, circles.right);
+
+  // sonification panel
+  if (inSon && !wasInSonZone)       { openPanel();        wasInSonZone   = true;  }
+  else if (!inSon && wasInSonZone)  { closePanel();       wasInSonZone   = false; }
+
+  // mouse-speed panel + REST
+  if (inMouse && !wasInMouseZone)      { openMousePanel();  sendRest(circles.left.endpoint, 1);   wasInMouseZone = true;  }
+  else if (!inMouse && wasInMouseZone) { closeMousePanel(); sendRest(circles.left.endpoint, 0);   wasInMouseZone = false; }
+
+  // thermals REST only (no panel)
+  if (inRight && !wasInRightZone)       { sendRest(circles.right.endpoint, 1); wasInRightZone = true;  }
+  else if (!inRight && wasInRightZone)  { sendRest(circles.right.endpoint, 0); wasInRightZone = false; }
+
+  // circle highlight
+  document.getElementById('left')  .classList.toggle('active', inMouse);
+  document.getElementById('right') .classList.toggle('active', inRight);
+  document.getElementById('bottom').classList.toggle('active', inSon);
+
+  // zone pills
+  document.getElementById('pill-mouse')   .classList.toggle('on', inMouse);
+  document.getElementById('pill-thermals').classList.toggle('on', inRight);
+  document.getElementById('pill-son')     .classList.toggle('on', inSon);
+}
+
+venn.addEventListener('mousedown', e => {
+  const rect = venn.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  pointer.style.left = x + 'px';
+  pointer.style.top  = y + 'px';
+  dragging = true;
+  evaluateZones(x, y);
+});
+window.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  const rect = venn.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  pointer.style.left = x + 'px';
+  pointer.style.top  = y + 'px';
+  evaluateZones(x, y);
+});
+window.addEventListener('mouseup', e => {
+  if (!dragging) return;
+  const rect = venn.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  const outsideVenn = x < 0 || y < 0 || x > rect.width || y > rect.height;
+  if (outsideVenn) {
+    if (wasInSonZone)   { closePanel();       wasInSonZone   = false; }
+    if (wasInMouseZone) { closeMousePanel();  sendRest(circles.left.endpoint,   0); wasInMouseZone = false; }
+    if (wasInRightZone) {                     sendRest(circles.right.endpoint,  0); wasInRightZone = false; }
+    document.getElementById('bottom').classList.remove('active');
+    document.getElementById('left')  .classList.remove('active');
+    document.getElementById('right') .classList.remove('active');
+    document.getElementById('pill-son')     .classList.remove('on');
+    document.getElementById('pill-mouse')   .classList.remove('on');
+    document.getElementById('pill-thermals').classList.remove('on');
+  }
+  dragging = false;
+});
+
+/* ═══════════════════════════════════════
+   PANEL OPEN / CLOSE
+═══════════════════════════════════════ */
+const panel      = document.getElementById('son-panel');
+const mousePanel = document.getElementById('mouse-panel');
+
+function openPanel()       { panel.classList.add('open'); }
+function closePanel()      { panel.classList.remove('open'); stopSon(); }
+function openMousePanel()  { mousePanel.classList.add('open'); }
+function closeMousePanel() { mousePanel.classList.remove('open'); stopMouseTracking(); }
+
+document.getElementById('btn-close-panel')      .addEventListener('click', closePanel);
+document.getElementById('btn-close-mouse-panel').addEventListener('click', closeMousePanel);
+
+/* ═══════════════════════════════════════
+   SONIFICATION ENGINE
+═══════════════════════════════════════ */
+let actx = null, running = false, animId = null;
+let cpu = 5;
+let lungHistory = [];
+let lastBreathAt = 0, phaseState = 'idle';
+let lastStepAt = 0, stepSide = 0;
+
+const cvs  = document.getElementById('son-canvas');
+const ctx2 = cvs.getContext('2d');
+
+function lerp(a, b, t) { return a + (b - a) * t; }
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+function getBreathBPM() {
+  const mn = parseInt(document.getElementById('brmin').value);
+  const mx = parseInt(document.getElementById('brmax').value);
+  return mn + (mx - mn) * (cpu / 100);
+}
+function getStepBPM() {
+  const bpm   = getBreathBPM();
+  const style = document.getElementById('sel-steps').value;
+  return style === 'walk' ? clamp(bpm * 3.5, 40, 120) : clamp(bpm * 2.8, 60, 220);
+}
+function getPhases() {
+  const bpm = getBreathBPM();
+  const cyc = 60 / bpm;
+  const s   = document.getElementById('sel-breath').value;
+  const [ir, er, pr] = s==='run'?[.38,.50,.12]:s==='nose'?[.40,.50,.10]:s==='panic'?[.45,.45,.10]:[.35,.55,.10];
+  return { inhale: cyc*ir, exhale: cyc*er, pause: cyc*pr, cycle: cyc };
+}
+
+function synthBreath(isInhale, intensity) {
+  if (!actx || !running) return;
+  const vol   = parseInt(document.getElementById('bvol').value) / 100;
+  const style = document.getElementById('sel-breath').value;
+  const ph    = getPhases();
+  const dur   = isInhale ? ph.inhale : ph.exhale;
+  const now   = actx.currentTime;
+  const bufSz = Math.ceil(actx.sampleRate * dur);
+  const buf   = actx.createBuffer(1, bufSz, actx.sampleRate);
+  const d     = buf.getChannelData(0);
+  const turb  = 0.15 + intensity * 0.55;
+  const brthy = style==='nose'?0.3:style==='panic'?0.9:style==='deep'?0.2:0.65;
+  for (let i = 0; i < bufSz; i++) {
+    const t   = i / bufSz;
+    let env   = isInhale
+      ? (t < 0.1 ? t/0.1 : t > 0.85 ? (1-t)/0.15 : 1)
+      : (t < 0.08 ? t/0.08 : t > 0.75 ? (1-t)/0.25 : 0.85);
+    const noise = Math.random()*2-1;
+    const tone  = Math.sin(2*Math.PI*(isInhale?180:140)*i/actx.sampleRate);
+    const low   = (Math.random()*2-1)*0.4;
+    let s = (noise*brthy + tone*(1-brthy)*0.6 + low*0.3)*turb;
+    if (style==='panic' && !isInhale) s *= 0.7 + Math.sin(i/bufSz*Math.PI*6)*0.3;
+    if (style==='deep')  s *= 0.7 + Math.sin(i/bufSz*Math.PI)*0.3;
+    d[i] = s * env * 0.9;
+  }
+  const src  = actx.createBufferSource(); src.buffer = buf;
+  const filt = actx.createBiquadFilter(); filt.type = 'bandpass';
+  filt.frequency.value = isInhale
+    ? (style==='nose'?600:style==='deep'?300:500+intensity*300)
+    : (style==='nose'?500:400+intensity*200);
+  filt.Q.value = style==='panic'?1.2:style==='deep'?3:1.8;
+  const gn  = actx.createGain();
+  const pk  = vol * (0.3 + intensity * 0.6);
+  gn.gain.setValueAtTime(0, now);
+  gn.gain.linearRampToValueAtTime(pk, now+dur*0.12);
+  gn.gain.setValueAtTime(pk, now+dur*0.75);
+  gn.gain.linearRampToValueAtTime(0, now+dur);
+  src.connect(filt); filt.connect(gn); gn.connect(actx.destination);
+  src.start(now); src.stop(now+dur+0.05);
+}
+
+function synthStep(side, intensity) {
+  if (!actx || !running) return;
+  const style = document.getElementById('sel-steps').value;
+  if (style === 'none') return;
+  const vol = parseInt(document.getElementById('svol').value) / 100;
+  const now = actx.currentTime;
+  if (style === 'gravel') {
+    const bufSz = Math.ceil(actx.sampleRate * 0.18);
+    const buf   = actx.createBuffer(1, bufSz, actx.sampleRate);
+    const d     = buf.getChannelData(0);
+    for (let i = 0; i < bufSz; i++) { const t=i/bufSz; d[i]=(Math.random()*2-1)*(1-t)*(1-t)*0.9; }
+    for (let g = 0; g < 3; g++) {
+      const src = actx.createBufferSource(); src.buffer = buf;
+      const fi  = actx.createBiquadFilter(); fi.type='highpass'; fi.frequency.value=800+Math.random()*1200;
+      const gn  = actx.createGain(); const dl = g*0.02;
+      gn.gain.setValueAtTime(0, now+dl);
+      gn.gain.linearRampToValueAtTime(vol*(0.3+intensity*0.5)*(1-g*0.3), now+dl+0.01);
+      gn.gain.linearRampToValueAtTime(0, now+dl+0.12);
+      src.connect(fi); fi.connect(gn); gn.connect(actx.destination);
+      src.start(now+dl); src.stop(now+dl+0.2);
+    }
+    return;
+  }
+  if (style === 'treadmill') {
+    const bufSz = Math.ceil(actx.sampleRate * 0.12);
+    const buf   = actx.createBuffer(1, bufSz, actx.sampleRate);
+    const d     = buf.getChannelData(0);
+    for (let i=0;i<bufSz;i++){const t=i/bufSz;d[i]=(Math.sin(2*Math.PI*60*i/actx.sampleRate)*Math.exp(-t*30)+(Math.random()*2-1)*Math.exp(-t*80)*0.4)*(1-t*0.5);}
+    const src=actx.createBufferSource(); src.buffer=buf;
+    const gn=actx.createGain(); gn.gain.value=vol*(0.5+intensity*0.4);
+    src.connect(gn); gn.connect(actx.destination);
+    src.start(now); src.stop(now+0.15);
+    return;
+  }
+  const isLeft = side===0;
+  const bufSz  = Math.ceil(actx.sampleRate*(style==='walk'?0.22:0.14));
+  const buf    = actx.createBuffer(1, bufSz, actx.sampleRate);
+  const d      = buf.getChannelData(0);
+  for (let i=0;i<bufSz;i++){
+    const t=i/bufSz;
+    const thud=Math.sin(2*Math.PI*(style==='walk'?55:80)*i/actx.sampleRate)*Math.exp(-t*(style==='walk'?18:35));
+    const snap=(Math.random()*2-1)*Math.exp(-t*120)*(style==='run'?0.35:0.15);
+    const scuff=Math.sin(2*Math.PI*200*i/actx.sampleRate)*Math.exp(-t*60)*(isLeft?0.12:0.08);
+    d[i]=(thud+snap+scuff)*(0.8+intensity*0.2);
+  }
+  const src=actx.createBufferSource(); src.buffer=buf;
+  const comp=actx.createDynamicsCompressor();
+  comp.threshold.value=-10; comp.ratio.value=4;
+  const gn=actx.createGain(); gn.gain.value=vol*(0.55+intensity*0.45)*(isLeft?1:0.88);
+  src.connect(comp); comp.connect(gn); gn.connect(actx.destination);
+  src.start(now); src.stop(now+0.3);
+}
+
+function barColor(p) {
+  return p<40 ? '#1D9E75' : p<70 ? '#BA7517' : '#E24B4A';
+}
+
+
+
+function animLoop() {
+  if (!running) return;
+  animId = requestAnimationFrame(animLoop);
+  const now = actx.currentTime;
+  const ph  = getPhases();
+  if (lastBreathAt === 0) lastBreathAt = now;
+  const bt = now - lastBreathAt;
+  let fill = 0;
+  if (bt < ph.inhale) {
+    phaseState = 'inhale'; fill = bt/ph.inhale;
+  } else if (bt < ph.inhale+ph.pause) {
+    phaseState = 'hold'; fill = 1;
+  } else if (bt < ph.inhale+ph.pause+ph.exhale) {
+    phaseState = 'exhale'; fill = 1-(bt-ph.inhale-ph.pause)/ph.exhale;
+  } else {
+    if (phaseState !== 'done') {
+      phaseState = 'done';
+      synthBreath(true, cpu/100);
+      setTimeout(() => { if (running) synthBreath(false, cpu/100); }, (ph.inhale+ph.pause)*1000);
+    }
+    fill = Math.max(0, 1-(bt-ph.inhale-ph.pause)/Math.max(.01,ph.exhale));
+    if (bt >= ph.cycle) { lastBreathAt = now; phaseState = 'inhale'; }
+  }
+  const ss = document.getElementById('sel-steps').value;
+  if (ss !== 'none') {
+    if (lastStepAt === 0) lastStepAt = now;
+    const si = 60/getStepBPM();
+    if (now-lastStepAt >= si) {
+      synthStep(stepSide, cpu/100);
+      animFoot(stepSide);
+      stepSide = 1-stepSide;
+      lastStepAt = now;
+    }
+  }
+  const pdot   = document.getElementById('pdot');
+  const logTxt = document.getElementById('log-txt');
+  if (phaseState==='inhale') {
+    pdot.style.background='#3B6FD8';
+    logTxt.textContent=`Inhale — ${Math.round(getBreathBPM())} breaths/min`;
+  } else if (phaseState==='exhale') {
+    pdot.style.background='#D85A30';
+    logTxt.textContent=`Exhale — CPU ${Math.round(cpu)}%`;
+  } else {
+    pdot.style.background='#aaa';
+    logTxt.textContent=`Hold — CPU ${Math.round(cpu)}%`;
+  }
+  drawViz(fill);
+}
+
+function animFoot(side) {
+  const fl = document.getElementById('foot-l');
+  const fr = document.getElementById('foot-r');
+  const el = side===0?fl:fr;
+  const col = barColor(cpu);
+  el.style.background = col;
+  el.classList.add('active');
+  document.getElementById('foot-lbl').textContent = side===0?'left':'right';
+  setTimeout(() => { el.classList.remove('active'); el.style.background=''; }, 120);
+}
+
+function drawViz(fill) {
+  const W=cvs.offsetWidth, H=cvs.offsetHeight;
+  cvs.width=W; cvs.height=H;
+  ctx2.fillStyle='#f7f9fb'; ctx2.fillRect(0,0,W,H);
+  lungHistory.push(fill);
+  if (lungHistory.length > W) lungHistory.shift();
+  const baseHue = cpu<40?150:cpu<70?35:0;
+  const sat     = cpu<40?65:cpu<70?80:72;
+  ctx2.beginPath(); ctx2.moveTo(0,H);
+  for (let i=0;i<lungHistory.length;i++) ctx2.lineTo(i, H-(lungHistory[i]*(H*0.78)+H*0.1));
+  ctx2.lineTo(lungHistory.length-1,H); ctx2.closePath();
+  ctx2.fillStyle=`hsla(${baseHue},${sat}%,52%,.15)`; ctx2.fill();
+  ctx2.beginPath();
+  ctx2.strokeStyle=`hsl(${baseHue},${sat}%,45%)`; ctx2.lineWidth=1.5;
+  for (let i=0;i<lungHistory.length;i++){
+    const y=H-(lungHistory[i]*(H*0.78)+H*0.1);
+    i===0?ctx2.moveTo(i,y):ctx2.lineTo(i,y);
+  }
+  ctx2.stroke();
+  const cx=W*0.84, cy=H*0.5;
+  const maxR=Math.min(H*0.34,24);
+  const r=maxR*(0.3+fill*0.7);
+  ctx2.beginPath(); ctx2.arc(cx,cy,r,0,Math.PI*2);
+  ctx2.fillStyle=`hsla(${baseHue},${sat}%,55%,.2)`; ctx2.fill();
+  ctx2.strokeStyle=`hsla(${baseHue},${sat}%,45%,.55)`; ctx2.lineWidth=1.5; ctx2.stroke();
+}
+
+function startSon() {
+  if (running) return;
+  actx = new (window.AudioContext||window.webkitAudioContext)();
+  running = true;
+  lungHistory = []; lastBreathAt = 0; lastStepAt = 0; stepSide = 0;
+  document.getElementById('btn-son-start').disabled = true;
+  document.getElementById('btn-son-stop').disabled  = false;
+  const badge = document.getElementById('panel-badge');
+  badge.textContent = 'ACTIF'; badge.classList.add('on');
+  requestAnimationFrame(animLoop);
+  synthBreath(true, cpu/100);
+}
+
+function stopSon() {
+  if (!running) return;
+  running = false;
+  cancelAnimationFrame(animId);
+  actx.close(); actx = null;
+  document.getElementById('btn-son-start').disabled = false;
+  document.getElementById('btn-son-stop').disabled  = true;
+  const badge = document.getElementById('panel-badge');
+  badge.textContent = 'INACTIF'; badge.classList.remove('on');
+  document.getElementById('log-txt').textContent = 'Stopped.';
+  document.getElementById('pdot').style.background = 'transparent';
+  ctx2.clearRect(0,0,cvs.width,cvs.height);
+}
+
+document.getElementById('sel-breath').addEventListener('change', () => { lungHistory=[]; lastBreathAt=actx?actx.currentTime:0; });
+document.getElementById('sel-steps').addEventListener('change',  () => { lastStepAt=actx?actx.currentTime:0; stepSide=0; });
+
+/* ═══════════════════════════════════════
+   MOUSE SPEED ENGINE
+═══════════════════════════════════════ */
+let mouseRunning    = false;
+let mouseTickInt    = null;
+let lastMouseX = null, lastMouseY = null, lastMouseT = null;
+let currentMouseSpeed = 0, targetMouseSpeed = 0;
+let mouseHistory = [];
+const mcvs = document.getElementById('mouse-canvas');
+const mctx = mcvs.getContext('2d');
+
+function startMouseTracking() {
+  if (mouseRunning) return;
+  mouseRunning = true;
+  mouseHistory = [];
+  lastMouseX = null; lastMouseY = null; lastMouseT = null;
+  document.getElementById('btn-mouse-start').disabled = true;
+  document.getElementById('btn-mouse-stop').disabled  = false;
+  const badge = document.getElementById('mouse-panel-badge');
+  badge.textContent = 'ACTIF'; badge.classList.add('on');
+  mouseTickInt = setInterval(mouseMainTick, 80);
+  fetch('http://localhost:5000/mouse-speed?start=1', { method: 'GET' }).then(r => r.json()).catch(() => {});
+}
+
+function stopMouseTracking() {
+  if (!mouseRunning) return;
+  mouseRunning = false;
+  clearInterval(mouseTickInt);
+  document.getElementById('btn-mouse-start').disabled = false;
+  document.getElementById('btn-mouse-stop').disabled  = true;
+  const badge = document.getElementById('mouse-panel-badge');
+  badge.textContent = 'INACTIF'; badge.classList.remove('on');
+  document.getElementById('mouse-state-txt').textContent = 'Stopped.';
+  updateMouseDisplay(0);
+  mctx.clearRect(0,0,mcvs.width,mcvs.height);
+  fetch('http://localhost:5000/mouse-speed?start=0', { method: 'GET' }).then(r => r.json()).catch(() => {});
+}
+
+document.addEventListener('mousemove', e => {
+  if (!mouseRunning) return;
+  const now = performance.now();
+  if (lastMouseX !== null) {
+    const dx = e.clientX - lastMouseX;
+    const dy = e.clientY - lastMouseY;
+    const dt = (now - lastMouseT) / 1000;
+    if (dt > 0) targetMouseSpeed = Math.sqrt(dx*dx + dy*dy) / dt;
+  }
+  lastMouseX = e.clientX; lastMouseY = e.clientY; lastMouseT = now;
+});
+
+function mouseMainTick() {
+  if (!mouseRunning) return;
+  currentMouseSpeed = currentMouseSpeed * 0.7 + targetMouseSpeed * 0.3;
+  targetMouseSpeed  *= 0.82;
+  updateMouseDisplay(currentMouseSpeed);
+  drawMouseViz(currentMouseSpeed);
+}
+
+function updateMouseDisplay(spd) {
+  const mx  = 1200;
+  const pct = Math.min(100, (spd / mx) * 100);
+  const col = spd < 400 ? '#3B6FD8' : spd < 800 ? '#BA7517' : '#E24B4A';
+  document.getElementById('mouse-speed-val').textContent = Math.round(spd);
+  document.getElementById('mouse-speed-val').style.color = col;
+  document.getElementById('mouse-speed-bar').style.width = pct + '%';
+  document.getElementById('mouse-speed-bar').style.background = col;
+  if (mouseRunning) {
+    document.getElementById('mouse-state-txt').textContent =
+      spd < 20  ? 'Mouse idle' :
+      spd < 300 ? 'Slow movement' :
+      spd < 700 ? 'Moderate movement' :
+      'Fast movement';
+    document.getElementById('mouse-state-txt').style.color = col;
+  }
+}
+
+function drawMouseViz(spd) {
+  const W = mcvs.offsetWidth, H = mcvs.offsetHeight;
+  mcvs.width = W; mcvs.height = H;
+  const mx = 1200;
+  const norm = Math.min(1, spd / mx);
+  mouseHistory.push(norm);
+  if (mouseHistory.length > W) mouseHistory.shift();
+  mctx.fillStyle = '#eff4ff'; mctx.fillRect(0,0,W,H);
+
+  const hue  = norm < .35 ? 218 : norm < .68 ? 35 : 0;
+  const sat  = 70;
+  mctx.beginPath(); mctx.moveTo(0,H);
+  for (let i=0;i<mouseHistory.length;i++) mctx.lineTo(i, H-(mouseHistory[i]*(H*0.8)+H*0.08));
+  mctx.lineTo(mouseHistory.length-1,H); mctx.closePath();
+  mctx.fillStyle=`hsla(${hue},${sat}%,55%,.18)`; mctx.fill();
+  mctx.beginPath();
+  mctx.strokeStyle=`hsl(${hue},${sat}%,45%)`; mctx.lineWidth=1.5;
+  for (let i=0;i<mouseHistory.length;i++){
+    const y=H-(mouseHistory[i]*(H*0.8)+H*0.08);
+    i===0?mctx.moveTo(i,y):mctx.lineTo(i,y);
+  }
+  mctx.stroke();
+}
+
+/* ═══════════════════════════════════════
+   MOUSE DEVICE SELECTOR
+═══════════════════════════════════════ */
+function loadMouseNames() {
+  const btn = document.querySelector('.mouse-refresh-btn');
+  const sel = document.getElementById('mouse-device-select');
+  const sts = document.getElementById('mouse-select-status');
+
+  btn.classList.add('spinning');
+  sts.className = 'mouse-select-status';
+  sts.textContent = 'Loading…';
+
+  fetch('http://localhost:5000/mouse/names', { method: 'GET' })
+    .then(r => r.json())
+    .then(data => {
+      btn.classList.remove('spinning');
+      if (data.status !== 'ok') throw new Error(data.message || 'Error');
+
+      const names = data.mouse_names || [];
+      const prev  = sel.value;
+
+      // Rebuild options
+      sel.innerHTML = names.length
+        ? names.map(n => `<option value="${n}"${n === prev ? ' selected' : ''}>${n}</option>`).join('')
+        : '<option value="">No device detected</option>';
+
+      sts.className = 'mouse-select-status ok';
+      sts.textContent = `${names.length} device${names.length > 1 ? 's' : ''} detected`;
+    })
+    .catch(err => {
+      btn.classList.remove('spinning');
+      sts.className = 'mouse-select-status err';
+      sts.textContent = 'Error: ' + err.message;
+    });
+}
+
+function onMouseDeviceChange(mouseName) {
+  if (!mouseName) return;
+  const sts = document.getElementById('mouse-select-status');
+  sts.className = 'mouse-select-status';
+  sts.textContent = 'Applying…';
+
+  fetch(`http://localhost:5000/mouse/set-name?mouse-name=${encodeURIComponent(mouseName)}`, { method: 'GET' })
+    .then(r => r.json())
+    .then(data => {
+      if (data.status !== 'ok') throw new Error(data.message || 'Error');
+      sts.className = 'mouse-select-status ok';
+      sts.textContent = `✓ ${data.mouse_name} (id ${data.mouse_id})`;
+    })
+    .catch(err => {
+      sts.className = 'mouse-select-status err';
+      sts.textContent = 'Error: ' + err.message;
+    });
+}
+
+// Load mouse list as soon as the mouse panel first opens
+const _origOpenMouse = openMousePanel;
+openMousePanel = function() {
+  _origOpenMouse();
+  if (document.getElementById('mouse-device-select').options[0]?.value === '') {
+    loadMouseNames();
+  }
+};
+</script>
+</body>
+</html>
