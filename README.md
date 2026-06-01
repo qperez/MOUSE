@@ -49,7 +49,48 @@ Section in progress...
 
 ![](figures/components_diagram_mouse.png)
 
-## HTTP API documentation
+## Project structure
 
-An OpenAPI documentation is available here: [OpenAPI documentation](./http_api_documentation/openapi.yaml).
-This documentation concerns the Python serer shown in the previous section.
+The project is split into five components:
+
+```
+.
+├── IDE_LSP_plugin/            # Java LSP plugin (Maven)
+├── C_code_M5Stack_core_one/   # C firmware for the M5Stack (PlatformIO)
+├── mouse_server_serial_hub/   # Python Flask server (central hub)
+├── web_graphic_user_interface/
+│   └── mouse_page.html        # Web control interface
+├── http_api_documentation/
+│   └── openapi.yaml           # REST API documentation (OpenAPI 3.0)
+├── figures/                   # Visual assets
+└── README.md
+```
+
+### IDE LSP Plugin (`IDE_LSP_plugin/`)
+
+A Java LSP (Language Server Protocol) plugin built with Maven. It computes the cyclomatic complexity of each method in real time using `CyclomaticComplexityAnalyzer`, then forwards the metrics to the Flask server via `POST /metric/complexity`.
+
+### M5Stack firmware (`C_code_M5Stack_core_one/`)
+
+A C firmware project built with PlatformIO for the M5Stack Core One. It receives commands from the Flask server over serial and drives:
+- the LVGL display (`chart.c`, `code_img.c`, `cpu_img.c`);
+- the PWM haptic feedback, scaled to McCabe complexity thresholds.
+
+### Flask server (`mouse_server_serial_hub/`)
+
+The central piece. It exposes the REST API and coordinates the other components:
+
+| Sub-folder | Role |
+|---|---|
+| `controllers/` | HTTP entry points (Flask Blueprints): X11 mouse, thermal modes, complexity |
+| `services/` | Business logic: PWM computation, thermal state, xinput |
+| `shared/` | State shared across requests: `SharedThermalState`, `SharedCyclomaticComplexityObject`, `SharedMouseState` |
+| `serial_mouse/` | Singletons for the serial connection and the X11 mouse driver |
+
+### Web interface (`web_graphic_user_interface/`)
+
+A single HTML page (`mouse_page.html`) for controlling mouse speed, thermal modes, and monitoring system state from a browser.
+
+### API documentation (`http_api_documentation/`)
+
+An **OpenAPI 3.0** specification covering all REST endpoints: X11 mouse management, IDE/GUI thermal modes, and cyclomatic complexity metric ingestion.
