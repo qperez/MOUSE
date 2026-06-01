@@ -2,8 +2,8 @@ from time import sleep
 
 import psutil
 
-from phase_api.serial_mouse.mouse_singleton import MouseSingleton
-from phase_api.shared.shared_mouse_state import SharedMouseState
+from mouse_server_serial_hub.mouse.serial_mouse.x11mouse_singleton import MouseSingleton
+from mouse_server_serial_hub.mouse.shared.shared_mouse_state import SharedMouseState
 
 mouse_singleton = MouseSingleton()
 shared_mouse_state = SharedMouseState()

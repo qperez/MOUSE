@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>PHASE — CPU Awareness Interface</title>
+<title>MOUSE — CPU Awareness Interface</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -827,9 +827,9 @@ pointer.style.left = '320px';
 pointer.style.top  = '230px';
 
 const circles = {
-  left:   { x: 250, y: 210, r: 130, endpoint: 'mouse/speed' },
-  right:  { x: 390, y: 210, r: 130, endpoint: 'thermal/gui'     },
-  bottom: { x: 320, y: 320, r: 130, endpoint: 'sonifier'    }
+  left:   { x: 250, y: 210, r: 130, endpoint: '/mouse/speed' },
+  right:  { x: 390, y: 210, r: 130, endpoint: '/thermal/gui'     },
+  bottom: { x: 320, y: 320, r: 130, endpoint: '/sonifier'    }
 };
 
 function inCircle(px, py, c) {
@@ -1196,7 +1196,7 @@ function startMouseTracking() {
   const badge = document.getElementById('mouse-panel-badge');
   badge.textContent = 'ACTIF'; badge.classList.add('on');
   mouseTickInt = setInterval(mouseMainTick, 80);
-  fetch('http://localhost:5000/mouse-speed?start=1', { method: 'GET' }).then(r => r.json()).catch(() => {});
+  fetch('http://localhost:5000/mouse/speed?start=1', { method: 'GET' }).then(r => r.json()).catch(() => {});
 }
 
 function stopMouseTracking() {
@@ -1210,7 +1210,7 @@ function stopMouseTracking() {
   document.getElementById('mouse-state-txt').textContent = 'Stopped.';
   updateMouseDisplay(0);
   mctx.clearRect(0,0,mcvs.width,mcvs.height);
-  fetch('http://localhost:5000/mouse-speed?start=0', { method: 'GET' }).then(r => r.json()).catch(() => {});
+  fetch('http://localhost:5000/mouse/speed?start=0', { method: 'GET' }).then(r => r.json()).catch(() => {});
 }
 
 document.addEventListener('mousemove', e => {

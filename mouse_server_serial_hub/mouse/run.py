@@ -5,19 +5,21 @@ from flask import Flask
 from flask_cors import CORS
 from flask_socketio import SocketIO
 
-from phase_api.controllers.cyclomatic_complexity_controller import cyclomatic_complexity_bp
-from phase_api.controllers.mouse_controller import mouse_bp
-from phase_api.controllers.thermal_controller import thermal_bp
-from phase_api.serial_mouse.serial_singleton import SerialSingleton
-from phase_api.services.cyclomatic_complexity_service import cyclomatic_complexity_over_serial_thread
-from phase_api.services.mouse_service import mouse_speed_thread
-from phase_api.services.thermal_service import hardware_infos_over_serial_thread
-from phase_api.shared.shared_thermal_state import SharedThermalState
+from mouse_server_serial_hub.mouse.controllers.x11mouse_controller import mouse_bp
+from mouse_server_serial_hub.mouse.controllers.thermal_controller import thermal_bp
+from mouse_server_serial_hub.mouse.serial_mouse.serial_singleton import SerialSingleton
+from mouse_server_serial_hub.mouse.services.cyclomatic_complexity_service import cyclomatic_complexity_over_serial_thread
+from mouse_server_serial_hub.mouse.services.x11mouse_service import mouse_speed_thread
+from mouse_server_serial_hub.mouse.services.thermal_service import hardware_infos_over_serial_thread
+from mouse_server_serial_hub.mouse.shared.shared_thermal_state import SharedThermalState
+
+from mouse_server_serial_hub.mouse.controllers.cyclomatic_complexity_controller import cyclomatic_complexity_bp
 
 app = Flask(__name__)
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
 serial_singleton = SerialSingleton()
+
 
 def send_cpu():
     while True:
@@ -41,7 +43,7 @@ def handle_connect():
 if __name__ == "__main__":
     app.register_blueprint(thermal_bp, url_prefix="/thermal")
     app.register_blueprint(mouse_bp, url_prefix="/mouse")
-    app.register_blueprint(cyclomatic_complexity_bp)
+    app.register_blueprint(cyclomatic_complexity_bp, url_prefix="/metric")
 
     ms_speed_thread = threading.Thread(target=mouse_speed_thread)
     ms_speed_thread.start()

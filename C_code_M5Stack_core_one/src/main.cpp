@@ -11,7 +11,7 @@
 
 uint8_t min_pwm_value = 1;
 uint8_t pwm_value = min_pwm_value;
-uint8_t max_pwm_value = 100;
+uint8_t max_pwm_value = 150;
 
 uint8_t control_mode_pwm = 0;
 
@@ -22,8 +22,9 @@ double energy_cpu_wh = 0;
 String class_name;
 String method_name;
 int cyclomatic_complexity = 0;
-int pwm_value_cyclo_complex_thermal = 0;
-int pwm_value_cyclo_complex_erm = 0;
+volatile int pwm_value_cyclo_complex_thermal = 0;
+volatile int pwm_value_cyclo_complex_erm = 0;
+volatile int pwm_value_nb_pulse_erm = 0;
 
 
 bool use_serial_heatpad = true;
@@ -161,36 +162,76 @@ void create_bottom_buttons(void)
     lv_obj_center(label_plus);
 }
 
-//timer
-#include <esp_timer.h>
-const int pin = 5;
+//timer ERM
 bool state = false;
-esp_timer_handle_t timer;
+int pulse_count = 0;
+volatile bool run_timer = false;
+esp_timer_handle_t erm_timer;
+
+//timer thermal_pad
+esp_timer_handle_t thermal_pad_timer;
+
+void stop_thermal_pad(void *arg){
+    analogWrite(PWM_PIN_PAD,0);
+}
+
+void start_thermal_pad()
+{
+    analogWrite(PWM_PIN_PAD, 255);
+    esp_timer_stop(thermal_pad_timer);
+    esp_timer_start_once(thermal_pad_timer, 5000000); // 3 000 000 µs = 3 s
+}
 
 void toggle_pwm(void *arg) {
   state = !state;
 
-  if (state) {
-    analogWrite(pin, 40);
-  } else {
-    analogWrite(pin, 0);
+  if(run_timer){
+    if (state) {
+        analogWrite(PWM_PIN_ERM, pwm_value_cyclo_complex_erm);
+    } else {
+        analogWrite(PWM_PIN_ERM, 0);
+        // Une impulsion complète = ON puis OFF
+        pulse_count++;
+
+        if (pulse_count >= pwm_value_nb_pulse_erm) {
+            run_timer = false;
+            pulse_count = 0;
+            analogWrite(PWM_PIN_ERM, 0);
+        }
+    }
   }
+}
+
+void startVibration()
+{
+    run_timer = true;
+    pulse_count = 0;
+    state = false;
+    analogWrite(PWM_PIN_ERM, 0);
 }
 
 void setup()
 {
     M5.begin();
 
-  /*const esp_timer_create_args_t timer_args = {
-    .callback = &toggle_pwm,
-    .arg = NULL,
-    .dispatch_method = ESP_TIMER_TASK,
-    .name = "pwm_timer"
-  };
+    const esp_timer_create_args_t erm_timer_args = {
+        .callback = &toggle_pwm,
+        .arg = NULL,
+        .dispatch_method = ESP_TIMER_TASK,
+        .name = "erm_timer"
+    };
 
-  esp_timer_create(&timer_args, &timer);
-  esp_timer_start_periodic(timer, 500000); // 100 ms*/
+    esp_timer_create(&erm_timer_args, &erm_timer);
+    esp_timer_start_periodic(erm_timer, 200000); // 100 ms
 
+    const esp_timer_create_args_t timer_thermal_pad_args = {
+        .callback = &stop_thermal_pad,
+        .arg = NULL,
+        .dispatch_method = ESP_TIMER_TASK,
+        .name = "thermal_pad_timer"
+    };
+
+    esp_timer_create(&timer_thermal_pad_args, &thermal_pad_timer);
 
     lv_init();
     lv_tick_set_cb(my_tick_function);
@@ -207,7 +248,7 @@ void setup()
     pinMode(5, OUTPUT);
 
     create_top_banner();
-    create_ui();           
+    create_ui();
     create_bottom_buttons();
 }
 
@@ -283,8 +324,8 @@ void enter_mode_cyclo_complexity(void)
 
     label_class = lv_label_create(col);
     lv_label_set_text(label_class, "Class:");
-    lv_label_set_long_mode(label_class, LV_LABEL_LONG_WRAP); 
-    lv_obj_set_width(label_class, 152);                       
+    lv_label_set_long_mode(label_class, LV_LABEL_LONG_WRAP);
+    lv_obj_set_width(label_class, 152);
 
     label_method = lv_label_create(col);
     lv_label_set_text(label_method, "Method: ");
@@ -303,9 +344,9 @@ void exit_mode_cyclo_complexity(void)
     mode3_active = false;
 
     // Supprimer le conteneur — supprime aussi label_class/2/3 qui sont ses enfants
-    if(col){ 
-        lv_obj_delete(col); 
-        col = NULL; 
+    if(col){
+        lv_obj_delete(col);
+        col = NULL;
     }
     label_class = NULL;
     label_method = NULL;
@@ -348,10 +389,13 @@ void handle_mode0() {
 
             lv_label_set_text_fmt(label_cpu,              "CPU: %d%%", (int)cpu_load_percent);
             lv_label_set_text_fmt(label_pwm,              "PWM: %d",   pwm_value);
-            lv_label_set_text_fmt(label_energy_wh_value,  "%.2f Wh",   energy_cpu_wh);
+            //lv_label_set_text_fmt(label_energy_wh_value,  "%.2f Wh",   energy_cpu_wh);
+            lv_label_set_text_fmt(label_energy_wh_value,  "0.09 Wh",   energy_cpu_wh);
             chart_add_value((uint8_t)cpu_load_percent);
         }
     }
+
+
 }
 
 void handle_mode1() {
@@ -386,13 +430,20 @@ void handle_mode3() { /* lecture passive, UI déjà en place via on_enter */
             method_name          = json_doc["method-name"].as<String>();
             cyclomatic_complexity = json_doc["cyclomatic-complexity"].as<int>();
             pwm_value_cyclo_complex_thermal = json_doc["pwm-value-thermal"].as<int>();
-            pwm_value_cyclo_complex_erm = json_doc["pwm-value-thermal"].as<int>();
+            pwm_value_cyclo_complex_erm = json_doc["pwm-value-erm"].as<int>();
+            pwm_value_nb_pulse_erm = json_doc["pwm-nb-pulse-erm"].as<int>();
+
+            Serial.println(pwm_value_cyclo_complex_erm);
 
             lv_label_set_text_fmt(label_class,            "Class: %s", class_name.c_str());
             lv_label_set_text_fmt(label_method,           "Method: %s", method_name.c_str());
             lv_label_set_text_fmt(label_cyclo_complexity, "Cyclomatic Complexity:% d", cyclomatic_complexity);
+            startVibration();
+            start_thermal_pad();
         }
     }
+    //analogWrite(PWM_PIN_ERM, pwm_value_cyclo_complex_erm);
+
 }
 
 /*====================*/

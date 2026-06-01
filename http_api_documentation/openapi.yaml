@@ -1,0 +1,333 @@
+openapi: 3.0.3
+info:
+  title: Mouse Server Serial Hub API
+  description: >
+    REST API for managing X11 mouse settings, thermal states,
+    and cyclomatic complexity metrics, exposed via Flask.
+  version: 1.0.0
+
+servers:
+  - url: http://127.0.0.1:5000
+    description: Local server
+
+tags:
+  - name: Mouse
+    description: X11 mouse management
+  - name: Thermal
+    description: Thermal state management (IDE / GUI)
+  - name: Metric
+    description: Cyclomatic complexity metric ingestion
+
+paths:
+
+  /mouse/names:
+    get:
+      tags: [Mouse]
+      summary: List available X11 mouse
+      description: Returns the list of mouse device names detected via xinput.
+      operationId: getMouseNames
+      responses:
+        "200":
+          description: Mouse list retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  mouse_names:
+                    type: array
+                    items:
+                      type: string
+                    example: ["Logitech G502", "USB Optical Mouse"]
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /mouse/set-name:
+    get:
+      tags: [Mouse]
+      summary: Select a mouse by name
+      description: >
+        Resolves the xinput ID matching the provided name
+        and sets it as the active mouse.
+      operationId: setMouseName
+      parameters:
+        - name: mouse-name
+          in: query
+          required: true
+          description: Mouse name as returned by `/mouse/names`
+          schema:
+            type: string
+            example: "Logitech G502"
+      responses:
+        "200":
+          description: Mouse selected successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  mouse_name:
+                    type: string
+                    example: "Logitech G502"
+                  mouse_id:
+                    type: integer
+                    example: 8
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /mouse/speed:
+    get:
+      tags: [Mouse]
+      summary: Set or toggle mouse speed
+      description: >
+        Two exclusive modes:
+        - **Toggle**: use the `start` parameter (`1` = enable, `0` = disable).
+        - **Speed value**: use the `value` parameter (float between [0,1]). Both parameters must not be combined.
+      operationId: setMouseSpeed
+      parameters:
+        - name: value
+          in: query
+          required: false
+          description: Float value for the mouse speed
+          schema:
+            type: number
+            format: float
+            example: 0.5
+        - name: start
+          in: query
+          required: false
+          description: "`1` to enable speed management, `0` to disable it"
+          schema:
+            type: string
+            enum: ["0", "1"]
+            example: "1"
+      responses:
+        "200":
+          description: Operation completed successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/SpeedStartResponse"
+                  - $ref: "#/components/schemas/SpeedValueResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /thermal/gui:
+    get:
+      tags: [Thermal]
+      summary: Enable / disable GUI thermal mode
+      description: >
+        When `start=1`, GUI mode is enabled and IDE mode is disabled.
+        When `start=0`, GUI mode is disabled.
+      operationId: setThermalGui
+      parameters:
+        - name: start
+          in: query
+          required: true
+          description: "`1` to enable GUI mode, `0` to disable it"
+          schema:
+            type: string
+            enum: ["0", "1"]
+            example: "1"
+      responses:
+        "200":
+          description: GUI thermal state updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ThermalStartResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /thermal/ide:
+    get:
+      tags: [Thermal]
+      summary: Enable / disable IDE thermal mode
+      description: >
+        When `start=1`, IDE mode is enabled and GUI mode is disabled.
+        When `start=0`, IDE mode is disabled.
+      operationId: setThermalIde
+      parameters:
+        - name: start
+          in: query
+          required: true
+          description: "`1` to enable IDE mode, `0` to disable it"
+          schema:
+            type: string
+            enum: ["0", "1"]
+            example: "1"
+      responses:
+        "200":
+          description: IDE thermal state updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ThermalStartResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /metric/complexity:
+    post:
+      tags: [Metric]
+      summary: Receive a cyclomatic complexity metric
+      description: >
+        Endpoint called (e.g. from an IDE plugin) to submit the cyclomatic
+        complexity of a method.
+
+
+        **Side effects (automatically applied):**
+
+        - GUI thermal mode is **disabled**.
+
+        - IDE thermal mode is **enabled**.
+
+
+        **PWM haptic feedback** is derived from McCabe's risk thresholds:
+
+        | Complexity | Risk level            | `pwm_value_erm` | `pwm_nb_pulse_erm` |
+        |------------|-----------------------|-----------------|--------------------|
+        | 1 – 5      | Simple, low risk      | 30              | 1                  |
+        | 6 – 10     | Moderate complexity   | 50              | 2                  |
+        | 11 – 20    | High, consider refactoring | 70         | 3                  |
+        | 21 +       | Very high, untestable | 90              | 3                  |
+      operationId: receiveComplexity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComplexityPayload"
+            example:
+              uri: "file:///home/user/project/src/MyClass.java"
+              className: "MyClass"
+              methodName: "processData"
+              signature: "void processData(String input)"
+              complexity: 7
+              startLine: 42
+      responses:
+        "200":
+          description: Metric received, PWM values computed, and thermal state switched to IDE
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  received:
+                    $ref: "#/components/schemas/ComplexityPayload"
+              example:
+                status: ok
+                received:
+                  uri: "file:///home/user/project/src/MyClass.java"
+                  className: "MyClass"
+                  methodName: "processData"
+                  signature: "void processData(String input)"
+                  complexity: 7
+                  startLine: 42
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+components:
+
+  schemas:
+
+    SpeedStartResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+        action:
+          type: string
+          example: start
+        start:
+          type: integer
+          enum: [0, 1]
+          example: 1
+
+    SpeedValueResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+        value:
+          type: number
+          format: float
+          example: 1.5
+
+    ThermalStartResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+        action:
+          type: string
+          example: start
+        start:
+          type: integer
+          enum: [0, 1]
+          example: 1
+
+    ComplexityPayload:
+      type: object
+      required:
+        - uri
+        - className
+        - methodName
+        - signature
+        - complexity
+        - startLine
+      properties:
+        uri:
+          type: string
+          description: Source file URI
+          example: "file:///home/user/project/src/MyClass.java"
+        className:
+          type: string
+          description: Name of the class containing the method
+          example: "MyClass"
+        methodName:
+          type: string
+          description: Name of the analyzed method
+          example: "processData"
+        signature:
+          type: string
+          description: Full method signature
+          example: "void processData(String input)"
+        complexity:
+          type: integer
+          description: >
+            Cyclomatic complexity value (McCabe). Drives the haptic PWM output:
+            ≤5 → pwm 30 / 1 pulse, 6-10 → pwm 50 / 2 pulses,
+            11-20 → pwm 70 / 3 pulses, 21+ → pwm 90 / 3 pulses.
+          example: 7
+        startLine:
+          type: integer
+          description: Line number where the method starts
+          example: 42
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Missing value"
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"

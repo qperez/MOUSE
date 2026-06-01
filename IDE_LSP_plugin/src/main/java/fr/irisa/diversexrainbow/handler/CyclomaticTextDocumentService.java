@@ -24,7 +24,7 @@ import static java.net.http.HttpRequest.newBuilder;
 public class CyclomaticTextDocumentService implements TextDocumentService {
 
     private static final Logger LOG = LoggerFactory.getLogger(CyclomaticTextDocumentService.class);
-    private static final String WEBHOOK_URL = "http://localhost:5000/complexity";
+    private static final String WEBHOOK_URL = "http://localhost:5000/metric/complexity";
     private final HttpClient httpClient = newHttpClient();
     private final ObjectMapper objectMapper = new ObjectMapper();
 

@@ -1,6 +1,6 @@
 from flask import Blueprint, request, abort, jsonify
 
-from phase_api.serial_mouse.mouse_singleton import MouseSingleton
+from mouse_server_serial_hub.mouse.serial_mouse.x11mouse_singleton import MouseSingleton
 
 mouse_singleton = MouseSingleton()
 mouse_bp = Blueprint('mouse', __name__)

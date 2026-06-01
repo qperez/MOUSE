@@ -1,6 +1,6 @@
 from flask import Blueprint, request, abort, jsonify
 
-from phase_api.shared.shared_thermal_state import SharedThermalState
+from mouse_server_serial_hub.mouse.shared.shared_thermal_state import SharedThermalState
 
 thermal_bp = Blueprint('thermal', __name__)
 

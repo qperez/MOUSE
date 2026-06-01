@@ -17,6 +17,7 @@ class SharedCyclomaticComplexityObject:
                     cls._instance.cyclomatic_complexity = 0
                     cls._instance.pwm_value_thermal = 0
                     cls._instance.pwm_value_erm = 0
+                    cls._instance.pwm_nb_pulse_erm = 0
 
         return cls._instance
 
@@ -38,6 +39,9 @@ class SharedCyclomaticComplexityObject:
     def get_pwm_value_erm(self):
         return self.pwm_value_erm
 
+    def get_pwm_nb_pulse_erm(self):
+        return self.pwm_nb_pulse_erm
+
     def set_class_name(self, class_name):
         self.class_name = class_name
 
@@ -55,5 +59,9 @@ class SharedCyclomaticComplexityObject:
 
     def set_pwm_value_erm(self, pwm_value_erm):
         self.pwm_value_erm = pwm_value_erm
+
+    def set_pwm_nb_pulse_erm(self, pwm_nb_pulse_erm):
+        self.pwm_nb_pulse_erm = pwm_nb_pulse_erm
+
 
 

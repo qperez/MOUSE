@@ -2,8 +2,8 @@ from time import sleep
 
 import psutil
 
-from phase_api.serial_mouse.serial_singleton import SerialSingleton
-from phase_api.shared.shared_thermal_state import SharedThermalState
+from mouse_server_serial_hub.mouse.serial_mouse.serial_singleton import SerialSingleton
+from mouse_server_serial_hub.mouse.shared.shared_thermal_state import SharedThermalState
 
 serial_singleton = SerialSingleton()
 shared_thermal_state = SharedThermalState()
