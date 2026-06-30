@@ -10,7 +10,8 @@ from mouse_server_serial_hub.mouse.controllers.thermal_controller import thermal
 from mouse_server_serial_hub.mouse.serial_mouse.serial_singleton import SerialSingleton
 from mouse_server_serial_hub.mouse.services.cyclomatic_complexity_service import cyclomatic_complexity_over_serial_thread
 from mouse_server_serial_hub.mouse.services.x11mouse_service import mouse_speed_thread
-from mouse_server_serial_hub.mouse.services.thermal_service import hardware_infos_over_serial_thread
+from mouse_server_serial_hub.mouse.services.thermal_service import mqtt_to_mouse_bridge
+from mouse_server_serial_hub.mouse.services.mqtt_bridge_service import hardware_infos_over_serial_thread
 from mouse_server_serial_hub.mouse.shared.shared_thermal_state import SharedThermalState
 
 from mouse_server_serial_hub.mouse.controllers.cyclomatic_complexity_controller import cyclomatic_complexity_bp
@@ -53,6 +54,9 @@ if __name__ == "__main__":
 
     cyclomatic_complexity_over_serial_thread = threading.Thread(target=cyclomatic_complexity_over_serial_thread)
     cyclomatic_complexity_over_serial_thread.start()
+
+    mqtt_to_mouse_bridge_thread = threading.Thread(target=mqtt_to_mouse_bridge)
+    mqtt_to_mouse_bridge_thread.start()
 
     shared_thermal_state = SharedThermalState()
     shared_thermal_state.set_thermal_state_ide(True)

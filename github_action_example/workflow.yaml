@@ -1,0 +1,25 @@
+name: GitHub to MOUSE demo
+on: [push]
+jobs:
+  DEMO-MOUSE-mqtt:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Stress CPU
+        run: |
+          sudo apt-get install -y stress
+          stress --cpu 2 --timeout 10s
+        
+      - name: Get CPU load
+        id: cpu
+        run: |
+          LOAD=$(cat /proc/loadavg | awk '{print $1}')
+          echo "load=$LOAD" >> $GITHUB_OUTPUT
+
+      - name: MQTT Publish Action
+        uses: juhrlass/mqtt-action@1.2.0
+        with:
+          protocol: mqtt
+          host: test.mosquitto.org
+          port: 1883
+          topic: "MOUSE_mqtt_bridge"
+          message: '{"class-name": "mqtt-bridge","method-name": "","signature": "","cyclomatic-complexity": "","pwm-value-thermal": "${{ steps.cpu.outputs.load }}","pwm-value-erm": 0,"pwm_nb_pulse_erm": 0 }'
