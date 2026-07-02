@@ -9,18 +9,6 @@ serial_singleton = SerialSingleton()
 shared_thermal_state = SharedThermalState()
 shared_cyclomatic_complexity_object = SharedCyclomaticComplexityObject()
 
-
-# temp : uses complexity endpoint
-json_values = {
-    "class-name": "",
-    "method-name": "",
-    "signature": "",
-    "cyclomatic-complexity": "",
-    "pwm-value-thermal": 0,
-    "pwm-value-erm": 0,
-    "pwm_nb_pulse_erm": 0
-}
-
 def on_connect(client, userdata, flags, reason_code, properties):
     print(f"Connected with result code {reason_code}")
     # Subscribing in on_connect() means that if we lose the connection and
