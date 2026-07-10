@@ -43,9 +43,11 @@ def receive_complexity():
         if complexity <= 5:
             pwm_value_erm = 30
             pwm_nb_pulse_erm = 1
+            pwm_value_thermal = 0
         elif 5 < complexity <= 10:
             pwm_value_erm = 50
             pwm_nb_pulse_erm = 2
+            pwm_value_thermal = 0
         elif 10 < complexity <= 20:
             pwm_value_erm = 70
             pwm_nb_pulse_erm = 3

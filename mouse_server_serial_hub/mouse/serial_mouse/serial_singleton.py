@@ -5,7 +5,7 @@ class SerialSingleton:
     _instance = None
     _lock = threading.Lock()
 
-    def __new__(cls, port='/dev/ttyACM0', baudrate=115200):
+    def __new__(cls, port='/dev/ttyACM1', baudrate=115200):
         if cls._instance is None:
             with cls._lock:
                 if cls._instance is None:

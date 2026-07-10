@@ -5,6 +5,7 @@ from flask import Flask
 from flask_cors import CORS
 from flask_socketio import SocketIO
 
+from mouse_server_serial_hub.mouse.controllers.erm_controller import vibration_bp
 from mouse_server_serial_hub.mouse.controllers.x11mouse_controller import mouse_bp
 from mouse_server_serial_hub.mouse.controllers.thermal_controller import thermal_bp
 from mouse_server_serial_hub.mouse.serial_mouse.serial_singleton import SerialSingleton
@@ -44,6 +45,7 @@ if __name__ == "__main__":
     app.register_blueprint(thermal_bp, url_prefix="/thermal")
     app.register_blueprint(mouse_bp, url_prefix="/mouse")
     app.register_blueprint(cyclomatic_complexity_bp, url_prefix="/metric")
+    app.register_blueprint(vibration_bp, url_prefix="/vibration")
 
     ms_speed_thread = threading.Thread(target=mouse_speed_thread)
     ms_speed_thread.start()

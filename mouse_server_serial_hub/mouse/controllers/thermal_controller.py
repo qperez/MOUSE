@@ -6,6 +6,13 @@ thermal_bp = Blueprint('thermal', __name__)
 
 shared_thermal_state = SharedThermalState()
 
+@thermal_bp.route("/heat")
+def thermal_poweron():
+    heating_duration = request.args.get("duration")
+    pwm_value = request.args.get("pwm")
+    return jsonify(status="ok", action="heat", duration=int(heating_duration), pwm=int(pwm_value))
+
+
 @thermal_bp.route("/gui")
 def thermal_gui():
     start = request.args.get("start")
