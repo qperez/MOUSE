@@ -1,3 +1,4 @@
+import argparse
 import threading
 
 import psutil
@@ -6,11 +7,11 @@ from flask_cors import CORS
 from flask_socketio import SocketIO
 
 from mouse_server_serial_hub.mouse.controllers.erm_controller import vibration_bp
-from mouse_server_serial_hub.mouse.controllers.x11mouse_controller import mouse_bp
+from mouse_server_serial_hub.mouse.controllers.mouse_controller import mouse_bp
 from mouse_server_serial_hub.mouse.controllers.thermal_controller import thermal_bp
 from mouse_server_serial_hub.mouse.serial_mouse.serial_singleton import SerialSingleton
 from mouse_server_serial_hub.mouse.services.cyclomatic_complexity_service import cyclomatic_complexity_over_serial_thread
-from mouse_server_serial_hub.mouse.services.x11mouse_service import mouse_speed_thread
+from mouse_server_serial_hub.mouse.services.mouse_service import mouse_speed_thread
 from mouse_server_serial_hub.mouse.services.thermal_service import hardware_infos_over_serial_thread
 from mouse_server_serial_hub.mouse.shared.shared_thermal_state import SharedThermalState
 
@@ -27,7 +28,7 @@ def send_cpu():
         cpu = psutil.cpu_percent(interval=1)
         socketio.emit("system_status", {
             "cpu": cpu,
-            "serial_connected": (serial_singleton.serial is not None)
+            "serial_connected": (serial_singleton is not None and serial_singleton.serial is not None)
         })
         socketio.sleep(1)
 
@@ -37,7 +38,7 @@ def handle_connect():
 
     socketio.emit("system_status", {
         "cpu": psutil.cpu_percent(),
-        "serial_connected": (serial_singleton.serial is not None)
+        "serial_connected": (serial_singleton is not None and serial_singleton.serial is not None)
     })
 
 
@@ -60,4 +61,11 @@ if __name__ == "__main__":
     shared_thermal_state.set_thermal_state_ide(True)
 
     socketio.start_background_task(send_cpu)
-    socketio.run(app, host="127.0.0.1", port=5000, allow_unsafe_werkzeug=True, debug=True)
+    socketio.run(
+        app,
+        host="127.0.0.1",
+        port=5000,
+        allow_unsafe_werkzeug=True,
+        debug=True,
+        use_reloader=False,  # reloader is disabled to prevent multiple mouse-speed workers  
+    )
