@@ -527,6 +527,32 @@ body {
 }
 .status-dot.on  { background: #1D9E75; }
 .status-dot.off { background: #E24B4A; }
+.serial-config {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 auto 14px;
+  max-width: 360px;
+}
+.serial-config input {
+  min-width: 0;
+  flex: 1;
+  padding: 7px 10px;
+  border: 1px solid #e8ecf2;
+  border-radius: 6px;
+  font: inherit;
+}
+.serial-config button {
+  padding: 7px 12px;
+  border: 0;
+  border-radius: 6px;
+  color: #fff;
+  background: #1d9e75;
+  cursor: pointer;
+}
+.serial-config button:disabled { opacity: .55; cursor: wait; }
+.serial-config-status { font-size: 11px; color: #777; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
 </head>
@@ -552,6 +578,11 @@ body {
     <span id="serial-txt">Serial disconnected</span>
   </span>
 </div>
+<form class="serial-config" id="serial-config-form">
+  <input id="serial-port" type="text" placeholder="Serial port (e.g. COM5)" autocomplete="off">
+  <button type="submit" id="serial-port-btn">Connect</button>
+  <span class="serial-config-status" id="serial-config-status"></span>
+</form>
 
 <!-- ── THREAD CONTROL ── -->
 <div class="thread-card">
@@ -759,6 +790,43 @@ function setSerialBadge(connected) {
   dot.className   = 'status-dot ' + (connected ? 'on' : 'off');
   txt.textContent = connected ? 'Serial connected' : 'Serial disconnected';
 }
+
+async function loadSerialPort() {
+  try {
+    const response = await fetch('http://localhost:5000/serial/port');
+    const data = await response.json();
+    document.getElementById('serial-port').value = data.port || '';
+    setSerialBadge(Boolean(data.serial_connected));
+  } catch (error) {
+    document.getElementById('serial-config-status').textContent = 'Server unavailable';
+  }
+}
+
+document.getElementById('serial-config-form').addEventListener('submit', async event => {
+  event.preventDefault();
+  const input = document.getElementById('serial-port');
+  const button = document.getElementById('serial-port-btn');
+  const status = document.getElementById('serial-config-status');
+  button.disabled = true;
+  status.textContent = 'Connecting...';
+
+  try {
+    const response = await fetch('http://localhost:5000/serial/port', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ port: input.value })
+    });
+    const data = await response.json();
+    setSerialBadge(Boolean(data.serial_connected));
+    status.textContent = data.serial_connected ? 'Connected' : 'Unavailable';
+  } catch (error) {
+    status.textContent = 'Server unavailable';
+  } finally {
+    button.disabled = false;
+  }
+});
+
+loadSerialPort();
 
 socket.on('connect', () => {
   console.log('[WS] connected to backend');

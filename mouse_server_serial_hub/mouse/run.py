@@ -6,21 +6,21 @@ from flask import Flask
 from flask_cors import CORS
 from flask_socketio import SocketIO
 
-from mouse_server_serial_hub.mouse.controllers.erm_controller import vibration_bp
-from mouse_server_serial_hub.mouse.controllers.mouse_controller import mouse_bp
-from mouse_server_serial_hub.mouse.controllers.thermal_controller import thermal_bp
-from mouse_server_serial_hub.mouse.serial_mouse.serial_singleton import SerialSingleton
-from mouse_server_serial_hub.mouse.services.cyclomatic_complexity_service import cyclomatic_complexity_over_serial_thread
-from mouse_server_serial_hub.mouse.services.mouse_service import mouse_speed_thread
-from mouse_server_serial_hub.mouse.services.thermal_service import hardware_infos_over_serial_thread
-from mouse_server_serial_hub.mouse.shared.shared_thermal_state import SharedThermalState
-
-from mouse_server_serial_hub.mouse.controllers.cyclomatic_complexity_controller import cyclomatic_complexity_bp
-
 app = Flask(__name__)
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
-serial_singleton = SerialSingleton()
+
+serial_singleton = None
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Run the MOUSE server")
+    parser.add_argument(
+        "--serial-port",
+        default=None,
+        help="Serial port for the M5Stack, for example COM5 or /dev/ttyACM1",
+    )
+    return parser.parse_args()
 
 
 def send_cpu():
@@ -43,6 +43,23 @@ def handle_connect():
 
 
 if __name__ == "__main__":
+    args = parse_args()
+
+    from mouse_server_serial_hub.mouse.serial_mouse.serial_singleton import SerialSingleton
+
+    serial_singleton = SerialSingleton(port=args.serial_port)
+
+    from mouse_server_serial_hub.mouse.controllers.erm_controller import vibration_bp
+    from mouse_server_serial_hub.mouse.controllers.mouse_controller import mouse_bp
+    from mouse_server_serial_hub.mouse.controllers.serial_controller import serial_bp
+    from mouse_server_serial_hub.mouse.controllers.thermal_controller import thermal_bp
+    from mouse_server_serial_hub.mouse.controllers.cyclomatic_complexity_controller import cyclomatic_complexity_bp
+    from mouse_server_serial_hub.mouse.services.cyclomatic_complexity_service import cyclomatic_complexity_over_serial_thread
+    from mouse_server_serial_hub.mouse.services.mouse_service import mouse_speed_thread
+    from mouse_server_serial_hub.mouse.services.thermal_service import hardware_infos_over_serial_thread
+    from mouse_server_serial_hub.mouse.shared.shared_thermal_state import SharedThermalState
+
+    app.register_blueprint(serial_bp, url_prefix="/serial")
     app.register_blueprint(thermal_bp, url_prefix="/thermal")
     app.register_blueprint(mouse_bp, url_prefix="/mouse")
     app.register_blueprint(cyclomatic_complexity_bp, url_prefix="/metric")
