@@ -215,13 +215,13 @@ body {
   transition: left .38s cubic-bezier(.4,0,.2,1), right .38s cubic-bezier(.4,0,.2,1);
 }
 
-/* RIGHT — sonification */
-#son-panel {
+/* RIGHT — vibration */
+#vibration-panel {
   right: calc(-1 * var(--panel-w));
   box-shadow: -6px 0 28px rgba(0,0,0,.12);
   border-left: 1px solid #e8ecf2;
 }
-#son-panel.open { right: 0; }
+#vibration-panel.open { right: 0; }
 
 /* LEFT — mouse-speed */
 #mouse-panel {
@@ -261,11 +261,11 @@ body {
 }
 .btn-close:hover { background: #f0f0f2; color: #555; }
 
-/* son panel colors */
-#son-panel .panel-header  { background: linear-gradient(135deg, #edfaf4 0%, #f5fff9 100%); border-bottom: 1px solid #c8ecd4; }
-#son-panel .panel-icon    { background: rgba(29,158,117,.15); color: var(--green); }
-#son-panel .panel-header h2 { color: #145c35; }
-#son-panel .panel-badge.on  { background: #c6f0d9; color: #145c35; }
+/* vibration panel colors */
+#vibration-panel .panel-header  { background: linear-gradient(135deg, #edfaf4 0%, #f5fff9 100%); border-bottom: 1px solid #c8ecd4; }
+#vibration-panel .panel-icon    { background: rgba(29,158,117,.15); color: var(--green); }
+#vibration-panel .panel-header h2 { color: #145c35; }
+#vibration-panel .panel-badge.on  { background: #c6f0d9; color: #145c35; }
 
 /* mouse panel colors */
 #mouse-panel .panel-header  { background: linear-gradient(135deg, #eff4ff 0%, #f5f8ff 100%); border-bottom: 1px solid #c8d4ec; }
@@ -276,12 +276,6 @@ body {
 /* Panel body */
 .panel-body { flex: 1; overflow-y: auto; padding: 16px; }
 
-/* Waveform canvas */
-#son-canvas {
-  display: block; width: 100%; height: 80px;
-  border-radius: 10px; background: #f7f9fb;
-  border: 1px solid #e8ecf2; margin-bottom: 14px;
-}
 /* Mouse speed canvas */
 #mouse-canvas {
   display: block; width: 100%; height: 80px;
@@ -330,6 +324,32 @@ body {
   padding: 4px 6px; background: #f8f9fb; color: #333;
   appearance: none;
 }
+
+.vibration-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  margin-bottom: 14px;
+  padding: 9px 11px;
+  border: 1px solid #e8ecf2;
+  border-radius: 8px;
+  background: #f8f9fb;
+  color: #777;
+  font-size: 11px;
+}
+.vibration-status::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #aaa;
+  flex-shrink: 0;
+}
+.vibration-status.ok { color: #145c35; background: #f0fdf6; border-color: #c6f0d9; }
+.vibration-status.ok::before { background: var(--green); }
+.vibration-status.err { color: #7a1a1a; background: #fff5f5; border-color: #fbc8c8; }
+.vibration-status.err::before { background: var(--red); }
 
 /* Phase log */
 .phase-log {
@@ -607,7 +627,7 @@ body {
 <div id="venn">
   <div id="label-left"   class="label">mouse-speed</div>
   <div id="label-right"  class="label">thermals</div>
-  <div id="label-bottom" class="label">sonification</div>
+  <div id="label-bottom" class="label">vibration</div>
 
   <div id="left"   class="circle"></div>
   <div id="right"  class="circle"></div>
@@ -624,93 +644,53 @@ body {
   <span class="zone-pill red" id="pill-thermals">
     <span class="zdot"></span> Thermals
   </span>
-  <span class="zone-pill green" id="pill-son">
-    <span class="zdot"></span> Sonification
+  <span class="zone-pill green" id="pill-vibration">
+    <span class="zdot"></span> Vibration
   </span>
 </div>
 
-<!-- ══════════════ RIGHT PANEL — Sonification ══════════════ -->
-<div id="son-panel" class="side-panel">
+<!-- ══════════════ RIGHT PANEL — Vibration ══════════════ -->
+<div id="vibration-panel" class="side-panel">
   <div class="panel-header">
     <div class="panel-header-left">
-      <div class="panel-icon">🎵</div>
+      <div class="panel-icon">V</div>
       <div>
-        <h2>CPU Sonification</h2>
-        <span class="panel-badge" id="panel-badge">INACTIF</span>
+        <h2>ERM Vibration</h2>
+        <span class="panel-badge" id="vibration-panel-badge">READY</span>
       </div>
     </div>
-    <button class="btn-close" id="btn-close-panel">✕</button>
+    <button class="btn-close" id="btn-close-panel" aria-label="Close vibration panel">✕</button>
   </div>
 
   <div class="panel-body">
 
-    <!-- Waveform canvas -->
-    <canvas id="son-canvas"></canvas>
-
-    <!-- Foot indicators -->
-    <div class="foot-row">
-      <span class="foot-lbl">Stride</span>
-      <div class="foot" id="foot-l" style="border-radius:9px 5px 5px 9px"></div>
-      <div class="foot" id="foot-r" style="border-radius:5px 9px 9px 5px"></div>
-      <span class="foot-lbl" id="foot-lbl">—</span>
-    </div>
-
-    <!-- Log -->
-    <div class="phase-log">
-      <span class="pdot" id="pdot"></span>
-      <span id="log-txt">Move the cursor into the circle to start.</span>
-    </div>
-
-    <!-- Controls -->
-    <div class="sec">Breathing</div>
+    <div class="vibration-status" id="vibration-status" role="status" aria-live="polite">Set the pulse pattern, then send it to the ERM motor.</div>
+    <div class="sec">Pulse pattern</div>
     <div class="ctrl-row">
-      <label>Style</label>
-      <select id="sel-breath">
-        <option value="run">Open mouth (running)</option>
-        <option value="nose">Nose (calm)</option>
-        <option value="panic">Hyperventilation</option>
-        <option value="deep">Deep (swimming)</option>
-      </select>
+      <label for="vibration-intensity">Intensity</label>
+      <input type="range" id="vibration-intensity" min="0" max="100" value="60" step="1" oninput="document.getElementById('vibration-intensity-v').textContent=this.value+'%'">
+      <span class="vv" id="vibration-intensity-v">60%</span>
     </div>
     <div class="ctrl-row">
-      <label>Rest (breaths/min)</label>
-      <input type="range" id="brmin" min="6" max="20" value="12" step="1" oninput="document.getElementById('brmin-v').textContent=this.value">
-      <span class="vv" id="brmin-v">12</span>
+      <label for="vibration-duration">Duration</label>
+      <input type="range" id="vibration-duration" min="10" max="1000" value="150" step="10" oninput="document.getElementById('vibration-duration-v').textContent=this.value+' ms'">
+      <span class="vv" id="vibration-duration-v">150 ms</span>
     </div>
     <div class="ctrl-row">
-      <label>Sprint (breaths/min)</label>
-      <input type="range" id="brmax" min="30" max="80" value="60" step="1" oninput="document.getElementById('brmax-v').textContent=this.value">
-      <span class="vv" id="brmax-v">60</span>
+      <label for="vibration-pulses">Number of pulses</label>
+      <input type="range" id="vibration-pulses" min="1" max="10" value="3" step="1" oninput="document.getElementById('vibration-pulses-v').textContent=this.value">
+      <span class="vv" id="vibration-pulses-v">3</span>
     </div>
     <div class="ctrl-row">
-      <label>Breath volume</label>
-      <input type="range" id="bvol" min="0" max="100" value="70" step="1" oninput="document.getElementById('bvol-v').textContent=this.value+'%'">
-      <span class="vv" id="bvol-v">70%</span>
+      <label for="vibration-delay">Delay</label>
+      <input type="range" id="vibration-delay" min="0" max="2000" value="250" step="10" oninput="document.getElementById('vibration-delay-v').textContent=this.value+' ms'">
+      <span class="vv" id="vibration-delay-v">250 ms</span>
     </div>
-
-    <div class="sec">Stride</div>
-    <div class="ctrl-row">
-      <label>Step style</label>
-      <select id="sel-steps">
-        <option value="run">Running stride</option>
-        <option value="walk">Walk</option>
-        <option value="treadmill">Treadmill</option>
-        <option value="gravel">Gravel</option>
-        <option value="none">None</option>
-      </select>
-    </div>
-    <div class="ctrl-row">
-      <label>Step volume</label>
-      <input type="range" id="svol" min="0" max="100" value="75" step="1" oninput="document.getElementById('svol-v').textContent=this.value+'%'">
-      <span class="vv" id="svol-v">75%</span>
-    </div>
-
 
   </div>
 
   <div class="panel-footer">
-    <button class="pf-btn start"  id="btn-son-start" onclick="startSon()">▶ Start</button>
-    <button class="pf-btn stop"   id="btn-son-stop"  onclick="stopSon()" disabled>■ Stop</button>
+    <button class="pf-btn start" id="btn-vibration-send" onclick="sendVibration()">Send vibration</button>
   </div>
 </div>
 
@@ -897,7 +877,7 @@ pointer.style.top  = '230px';
 const circles = {
   left:   { x: 250, y: 210, r: 130, endpoint: '/mouse/speed' },
   right:  { x: 390, y: 210, r: 130, endpoint: '/thermal/gui'     },
-  bottom: { x: 320, y: 320, r: 130, endpoint: '/sonifier'    }
+  bottom: { x: 320, y: 320, r: 130 }
 };
 
 function inCircle(px, py, c) {
@@ -909,18 +889,18 @@ function sendRest(endpoint, start) {
     .catch(() => {});
 }
 
-let wasInSonZone   = false;
+let wasInVibrationZone = false;
 let wasInMouseZone = false;
 let wasInRightZone = false;
 
 function evaluateZones(x, y) {
-  const inSon   = inCircle(x, y, circles.bottom);
+  const inVibration = inCircle(x, y, circles.bottom);
   const inMouse = inCircle(x, y, circles.left);
   const inRight = inCircle(x, y, circles.right);
 
-  // sonification panel
-  if (inSon && !wasInSonZone)       { openPanel();        wasInSonZone   = true;  }
-  else if (!inSon && wasInSonZone)  { closePanel();       wasInSonZone   = false; }
+  // vibration panel
+  if (inVibration && !wasInVibrationZone)       { openPanel();       wasInVibrationZone = true; }
+  else if (!inVibration && wasInVibrationZone)  { closePanel();      wasInVibrationZone = false; }
 
   // mouse-speed panel + REST
   if (inMouse && !wasInMouseZone)      { openMousePanel();  sendRest(circles.left.endpoint, 1);   wasInMouseZone = true;  }
@@ -933,12 +913,12 @@ function evaluateZones(x, y) {
   // circle highlight
   document.getElementById('left')  .classList.toggle('active', inMouse);
   document.getElementById('right') .classList.toggle('active', inRight);
-  document.getElementById('bottom').classList.toggle('active', inSon);
+  document.getElementById('bottom').classList.toggle('active', inVibration);
 
   // zone pills
   document.getElementById('pill-mouse')   .classList.toggle('on', inMouse);
   document.getElementById('pill-thermals').classList.toggle('on', inRight);
-  document.getElementById('pill-son')     .classList.toggle('on', inSon);
+  document.getElementById('pill-vibration').classList.toggle('on', inVibration);
 }
 
 venn.addEventListener('mousedown', e => {
@@ -966,13 +946,13 @@ window.addEventListener('mouseup', e => {
   const y = e.clientY - rect.top;
   const outsideVenn = x < 0 || y < 0 || x > rect.width || y > rect.height;
   if (outsideVenn) {
-    if (wasInSonZone)   { closePanel();       wasInSonZone   = false; }
+    if (wasInVibrationZone) { closePanel();   wasInVibrationZone = false; }
     if (wasInMouseZone) { closeMousePanel();  sendRest(circles.left.endpoint,   0); wasInMouseZone = false; }
     if (wasInRightZone) {                     sendRest(circles.right.endpoint,  0); wasInRightZone = false; }
     document.getElementById('bottom').classList.remove('active');
     document.getElementById('left')  .classList.remove('active');
     document.getElementById('right') .classList.remove('active');
-    document.getElementById('pill-son')     .classList.remove('on');
+    document.getElementById('pill-vibration').classList.remove('on');
     document.getElementById('pill-mouse')   .classList.remove('on');
     document.getElementById('pill-thermals').classList.remove('on');
   }
@@ -982,11 +962,11 @@ window.addEventListener('mouseup', e => {
 /* ═══════════════════════════════════════
    PANEL OPEN / CLOSE
 ═══════════════════════════════════════ */
-const panel      = document.getElementById('son-panel');
+const panel      = document.getElementById('vibration-panel');
 const mousePanel = document.getElementById('mouse-panel');
 
 function openPanel()       { panel.classList.add('open'); }
-function closePanel()      { panel.classList.remove('open'); stopSon(); }
+function closePanel()      { panel.classList.remove('open'); }
 function openMousePanel()  { mousePanel.classList.add('open'); }
 function closeMousePanel() { mousePanel.classList.remove('open'); stopMouseTracking(); }
 
@@ -994,8 +974,9 @@ document.getElementById('btn-close-panel')      .addEventListener('click', close
 document.getElementById('btn-close-mouse-panel').addEventListener('click', closeMousePanel);
 
 /* ═══════════════════════════════════════
-   SONIFICATION ENGINE
+  LEGACY AUDIO ENGINE (disabled)
 ═══════════════════════════════════════ */
+/* Legacy audio implementation retained but inactive.
 let actx = null, running = false, animId = null;
 let cpu = 5;
 let lungHistory = [];
@@ -1242,6 +1223,47 @@ function stopSon() {
 
 document.getElementById('sel-breath').addEventListener('change', () => { lungHistory=[]; lastBreathAt=actx?actx.currentTime:0; });
 document.getElementById('sel-steps').addEventListener('change',  () => { lastStepAt=actx?actx.currentTime:0; stepSide=0; });
+*/
+
+let cpu = 5;
+function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
+function barColor(value) {
+  return value < 40 ? '#1D9E75' : value < 70 ? '#BA7517' : '#E24B4A';
+}
+
+async function sendVibration() {
+  const button = document.getElementById('btn-vibration-send');
+  const status = document.getElementById('vibration-status');
+  const badge = document.getElementById('vibration-panel-badge');
+  const params = new URLSearchParams({
+    pwm: document.getElementById('vibration-intensity').value,
+    'vibration-duration': document.getElementById('vibration-duration').value,
+    'nb-repetitions': document.getElementById('vibration-pulses').value,
+    'time-between-vibration': document.getElementById('vibration-delay').value
+  });
+
+  button.disabled = true;
+  status.className = 'vibration-status';
+  status.textContent = 'Sending pulse pattern...';
+  badge.textContent = 'SENDING';
+
+  try {
+    const response = await fetch(`http://localhost:5000/vibration/loop?${params}`, { method: 'GET' });
+    const result = await response.json();
+    if (!response.ok || result.status !== 'ok') throw new Error(result.message || 'Vibration request failed');
+    status.className = 'vibration-status ok';
+    status.textContent = `Sent ${result.nb_repetitions} pulse${result.nb_repetitions === 1 ? '' : 's'} at ${result.pwm}% intensity.`;
+    badge.textContent = 'SENT';
+    badge.classList.add('on');
+  } catch (error) {
+    status.className = 'vibration-status err';
+    status.textContent = `Could not send vibration: ${error.message}`;
+    badge.textContent = 'ERROR';
+    badge.classList.remove('on');
+  } finally {
+    button.disabled = false;
+  }
+}
 
 /* ═══════════════════════════════════════
    MOUSE SPEED ENGINE
