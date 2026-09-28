@@ -9,19 +9,22 @@ shared_haptic_service = SharedHapticService()
 
 @vibration_bp.route("/on")
 def on():
-    vibration_duration = int(request.args.get("duration"))
-    pwm_value = int(request.args.get("pwm"))
-
+    vibration_duration = request.args.get("duration",type=int)
+    pwm_value = request.args.get("pwm",type=int)
+    if not 0 <= pwm_value <= 255:
+        abort(400, "Invalid pwm value") 
     shared_haptic_service.vibration_to_serial(vibration_duration, pwm_value)
 
     return jsonify(status="ok", action="vibration on", duration=vibration_duration, pwm=pwm_value)
 
 @vibration_bp.route("/loop")
 def loop():
-    vibration_duration = int(request.args.get("vibration-duration"))
-    pwm_value = int(request.args.get("pwm"))
-    nb_repetitions = int(request.args.get("nb-repetitions"))
-    time_between_vibration = int(request.args.get("time-between-vibration"))
+    vibration_duration = request.args.get("vibration-duration",type=int)
+    pwm_value = request.args.get("pwm",type=int)
+    if not 0 <= pwm_value <= 255:
+        abort(400, "Invalid pwm value") 
+    nb_repetitions = request.args.get("nb-repetitions",type=int)
+    time_between_vibration = request.args.get("time-between-vibration",type=int)
 
     shared_haptic_service.vibration_to_serial(vibration_duration, pwm_value, nb_repetitions, time_between_vibration)
 

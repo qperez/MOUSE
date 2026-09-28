@@ -206,7 +206,7 @@ body {
   position: fixed;
   top: 0;
   height: 100vh;
-  width: var(--panel-w);
+  width: min(var(--panel-w), 100vw);
   background: #fff;
   z-index: 200;
   display: flex;
@@ -215,21 +215,14 @@ body {
   transition: left .38s cubic-bezier(.4,0,.2,1), right .38s cubic-bezier(.4,0,.2,1);
 }
 
-/* RIGHT — vibration */
-#vibration-panel {
+/* Shared modality drawer */
+#modality-panel {
   right: calc(-1 * var(--panel-w));
+  left: auto;
   box-shadow: -6px 0 28px rgba(0,0,0,.12);
   border-left: 1px solid #e8ecf2;
 }
-#vibration-panel.open { right: 0; }
-
-/* LEFT — mouse-speed */
-#mouse-panel {
-  left: calc(-1 * var(--panel-w));
-  box-shadow: 6px 0 28px rgba(0,0,0,.12);
-  border-right: 1px solid #e8ecf2;
-}
-#mouse-panel.open { left: 0; }
+#modality-panel.open { right: 0; }
 
 /* Panel header */
 .panel-header {
@@ -261,17 +254,18 @@ body {
 }
 .btn-close:hover { background: #f0f0f2; color: #555; }
 
-/* vibration panel colors */
-#vibration-panel .panel-header  { background: linear-gradient(135deg, #edfaf4 0%, #f5fff9 100%); border-bottom: 1px solid #c8ecd4; }
-#vibration-panel .panel-icon    { background: rgba(29,158,117,.15); color: var(--green); }
-#vibration-panel .panel-header h2 { color: #145c35; }
-#vibration-panel .panel-badge.on  { background: #c6f0d9; color: #145c35; }
+/* Shared panel colors */
+#modality-panel .panel-header  { background: linear-gradient(135deg, #f0f4f7 0%, #f8fafb 100%); border-bottom: 1px solid #d9e1e6; }
+#modality-panel .panel-icon    { background: #e1eaee; color: #33515b; }
+#modality-panel .panel-header h2 { color: #263e46; }
+#modality-panel .panel-badge.on  { background: #d6e8df; color: #145c35; }
 
-/* mouse panel colors */
-#mouse-panel .panel-header  { background: linear-gradient(135deg, #eff4ff 0%, #f5f8ff 100%); border-bottom: 1px solid #c8d4ec; }
-#mouse-panel .panel-icon    { background: rgba(59,111,216,.12); color: var(--blue); }
-#mouse-panel .panel-header h2 { color: #1a2f6e; }
-#mouse-panel .panel-badge.on  { background: #d0d9f8; color: #1a2f6e; }
+.modality-section[hidden] { display: none; }
+.modality-section + .modality-section { margin-top: 18px; padding-top: 4px; border-top: 1px solid #edf0f2; }
+.modality-actions { display: flex; gap: 8px; margin-top: 12px; }
+.modality-actions .pf-btn { flex: 1; }
+.section-heading { display: flex; align-items: center; justify-content: space-between; margin: 14px 0 8px; }
+.section-heading h2 { font-size: 12px; font-weight: 800; color: #37474f; }
 
 /* Panel body */
 .panel-body { flex: 1; overflow-y: auto; padding: 16px; }
@@ -317,6 +311,9 @@ body {
 .ctrl-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .ctrl-row label { font-size: 11.5px; color: #666; min-width: 105px; text-align: right; flex-shrink: 0; }
 .ctrl-row input[type=range] { flex: 1; width: auto; accent-color: var(--green); }
+#mouse-section .ctrl-row input[type=range] { accent-color: var(--blue); }
+#vibration-section .ctrl-row input[type=range] { accent-color: var(--green); }
+#thermal-section .ctrl-row input[type=range] { accent-color: var(--red); }
 .ctrl-row .vv { font-size: 11px; font-weight: 700; color: #333; min-width: 30px; }
 .ctrl-row select {
   flex: 1; font-size: 11.5px;
@@ -350,6 +347,10 @@ body {
 .vibration-status.ok::before { background: var(--green); }
 .vibration-status.err { color: #7a1a1a; background: #fff5f5; border-color: #fbc8c8; }
 .vibration-status.err::before { background: var(--red); }
+#thermal-section .section-heading h2 { color: var(--red); }
+#thermal-section .panel-badge { color: #8b2929; background: #fde8e8; }
+#thermal-status.ok { color: #8b2929; background: #fff1f1; border-color: #f5caca; }
+#thermal-status.ok::before { background: var(--red); }
 
 /* Phase log */
 .phase-log {
@@ -390,6 +391,8 @@ body {
 }
 .pf-btn.start { background: linear-gradient(135deg, #1D9E75, #16c470); color: #fff; box-shadow: 0 3px 10px rgba(29,158,117,.3); }
 .pf-btn.start:hover { box-shadow: 0 5px 16px rgba(29,158,117,.45); transform: translateY(-1px); }
+.pf-btn.start-red { background: linear-gradient(135deg, #c83d3d, #e24b4a); color: #fff; box-shadow: 0 3px 10px rgba(226,75,74,.28); }
+.pf-btn.start-red:hover { box-shadow: 0 5px 16px rgba(226,75,74,.4); transform: translateY(-1px); }
 .pf-btn.start-blue { background: linear-gradient(135deg, #3B6FD8, #5b8dee); color: #fff; box-shadow: 0 3px 10px rgba(59,111,216,.3); }
 .pf-btn.start-blue:hover { box-shadow: 0 5px 16px rgba(59,111,216,.45); transform: translateY(-1px); }
 .pf-btn.stop  { background: #fff; border: 1.5px solid #e24b4a; color: #e24b4a; }
@@ -650,26 +653,27 @@ body {
 </div>
 
 <!-- ══════════════ RIGHT PANEL — Vibration ══════════════ -->
-<div id="vibration-panel" class="side-panel">
+<div id="modality-panel" class="side-panel">
   <div class="panel-header">
     <div class="panel-header-left">
-      <div class="panel-icon">V</div>
+      <div class="panel-icon">M</div>
       <div>
-        <h2>ERM Vibration</h2>
-        <span class="panel-badge" id="vibration-panel-badge">READY</span>
+        <h2>Selected modalities</h2>
+        <span class="panel-badge" id="modality-panel-badge">NONE</span>
       </div>
     </div>
-    <button class="btn-close" id="btn-close-panel" aria-label="Close vibration panel">✕</button>
+    <button class="btn-close" id="btn-close-panel" aria-label="Close modality panel">✕</button>
   </div>
 
   <div class="panel-body">
-
+    <section id="vibration-section" class="modality-section" hidden>
+    <div class="sec">Vibration</div>
     <div class="vibration-status" id="vibration-status" role="status" aria-live="polite">Set the pulse pattern, then send it to the ERM motor.</div>
     <div class="sec">Pulse pattern</div>
     <div class="ctrl-row">
-      <label for="vibration-intensity">Intensity</label>
-      <input type="range" id="vibration-intensity" min="0" max="100" value="60" step="1" oninput="document.getElementById('vibration-intensity-v').textContent=this.value+'%'">
-      <span class="vv" id="vibration-intensity-v">60%</span>
+      <label for="vibration-intensity">PWM value</label>
+      <input type="range" id="vibration-intensity" min="0" max="255" value="153" step="1" oninput="document.getElementById('vibration-intensity-v').textContent=this.value">
+      <span class="vv" id="vibration-intensity-v">153</span>
     </div>
     <div class="ctrl-row">
       <label for="vibration-duration">Duration</label>
@@ -686,28 +690,37 @@ body {
       <input type="range" id="vibration-delay" min="0" max="2000" value="250" step="10" oninput="document.getElementById('vibration-delay-v').textContent=this.value+' ms'">
       <span class="vv" id="vibration-delay-v">250 ms</span>
     </div>
-
-  </div>
-
-  <div class="panel-footer">
-    <button class="pf-btn start" id="btn-vibration-send" onclick="sendVibration()">Send vibration</button>
-  </div>
-</div>
-
-<!-- ══════════════ LEFT PANEL — Mouse Speed ══════════════ -->
-<div id="mouse-panel" class="side-panel">
-  <div class="panel-header">
-    <div class="panel-header-left">
-      <div class="panel-icon">🖱</div>
-      <div>
-        <h2>Mouse Speed</h2>
-        <span class="panel-badge" id="mouse-panel-badge">INACTIF</span>
-      </div>
+    <div class="modality-actions">
+      <button class="pf-btn start" id="btn-vibration-send" onclick="sendVibration()">Send vibration</button>
     </div>
-    <button class="btn-close" id="btn-close-mouse-panel">✕</button>
-  </div>
+    </section>
 
-  <div class="panel-body">
+    <section id="thermal-section" class="modality-section" hidden>
+      <div class="section-heading">
+        <h2>Thermals</h2>
+        <span class="panel-badge" id="thermal-panel-badge">READY</span>
+      </div>
+      <div class="vibration-status" id="thermal-status" role="status" aria-live="polite">Set the heat level and duration, then send it to the pad.</div>
+      <div class="ctrl-row">
+        <label for="thermal-intensity">PWM value</label>
+        <input type="range" id="thermal-intensity" min="0" max="255" value="77" step="1" oninput="document.getElementById('thermal-intensity-v').textContent=this.value">
+        <span class="vv" id="thermal-intensity-v">77</span>
+      </div>
+      <div class="ctrl-row">
+        <label for="thermal-duration">Duration</label>
+        <input type="range" id="thermal-duration" min="100" max="5000" value="1000" step="100" oninput="document.getElementById('thermal-duration-v').textContent=this.value+' ms'">
+        <span class="vv" id="thermal-duration-v">1000 ms</span>
+      </div>
+      <div class="modality-actions">
+        <button class="pf-btn start-red" id="btn-thermal-send" onclick="sendThermal()">Send heat</button>
+      </div>
+    </section>
+
+<section id="mouse-section" class="modality-section" hidden>
+    <div class="section-heading">
+      <h2>Mouse Speed</h2>
+      <span class="panel-badge" id="mouse-section-badge">INACTIF</span>
+    </div>
 
     <!-- Speed visualisation -->
     <div class="speed-display">
@@ -739,12 +752,12 @@ body {
     <input type="range" id="ms-max"    value="1200" min="200" max="3000">
     <input type="range" id="ms-smooth" value="8"    min="1"   max="20">
 
-  </div>
-
-  <div class="panel-footer">
+  <div class="modality-actions">
     <button class="pf-btn start-blue" id="btn-mouse-start" onclick="startMouseTracking()">▶ Start</button>
     <button class="pf-btn stop"       id="btn-mouse-stop"  onclick="stopMouseTracking()" disabled>■ Stop</button>
   </div>
+</section>
+</div>
 </div>
 
 <script>
@@ -884,12 +897,11 @@ function inCircle(px, py, c) {
   return Math.hypot(px - c.x, py - c.y) <= c.r;
 }
 function sendRest(endpoint, start) {
-  fetch(`http://localhost:5000/${endpoint}?start=${start}`, { method: 'GET' })
+  fetch(`http://localhost:5000${endpoint}?start=${start}`, { method: 'GET' })
     .then(r => r.json())
     .catch(() => {});
 }
 
-let wasInVibrationZone = false;
 let wasInMouseZone = false;
 let wasInRightZone = false;
 
@@ -898,17 +910,29 @@ function evaluateZones(x, y) {
   const inMouse = inCircle(x, y, circles.left);
   const inRight = inCircle(x, y, circles.right);
 
-  // vibration panel
-  if (inVibration && !wasInVibrationZone)       { openPanel();       wasInVibrationZone = true; }
-  else if (!inVibration && wasInVibrationZone)  { closePanel();      wasInVibrationZone = false; }
-
-  // mouse-speed panel + REST
-  if (inMouse && !wasInMouseZone)      { openMousePanel();  sendRest(circles.left.endpoint, 1);   wasInMouseZone = true;  }
-  else if (!inMouse && wasInMouseZone) { closeMousePanel(); sendRest(circles.left.endpoint, 0);   wasInMouseZone = false; }
+  // Mouse-speed activation and device discovery
+  if (inMouse && !wasInMouseZone) {
+    sendRest(circles.left.endpoint, 1);
+    if (document.getElementById('mouse-device-select').options[0]?.value === '') loadMouseNames();
+    wasInMouseZone = true;
+  } else if (!inMouse && wasInMouseZone) {
+    if (mouseRunning) stopMouseTracking(false);
+    sendRest(circles.left.endpoint, 0);
+    wasInMouseZone = false;
+  }
 
   // thermals REST only (no panel)
   if (inRight && !wasInRightZone)       { sendRest(circles.right.endpoint, 1); wasInRightZone = true;  }
   else if (!inRight && wasInRightZone)  { sendRest(circles.right.endpoint, 0); wasInRightZone = false; }
+
+  const selectedCount = Number(inMouse) + Number(inRight) + Number(inVibration);
+  panel.classList.toggle('open', selectedCount > 0);
+  document.getElementById('mouse-section').hidden = !inMouse;
+  document.getElementById('thermal-section').hidden = !inRight;
+  document.getElementById('vibration-section').hidden = !inVibration;
+  const panelBadge = document.getElementById('modality-panel-badge');
+  panelBadge.textContent = selectedCount ? `${selectedCount} SELECTED` : 'NONE';
+  panelBadge.classList.toggle('on', selectedCount > 0);
 
   // circle highlight
   document.getElementById('left')  .classList.toggle('active', inMouse);
@@ -945,33 +969,21 @@ window.addEventListener('mouseup', e => {
   const x = e.clientX - rect.left;
   const y = e.clientY - rect.top;
   const outsideVenn = x < 0 || y < 0 || x > rect.width || y > rect.height;
-  if (outsideVenn) {
-    if (wasInVibrationZone) { closePanel();   wasInVibrationZone = false; }
-    if (wasInMouseZone) { closeMousePanel();  sendRest(circles.left.endpoint,   0); wasInMouseZone = false; }
-    if (wasInRightZone) {                     sendRest(circles.right.endpoint,  0); wasInRightZone = false; }
-    document.getElementById('bottom').classList.remove('active');
-    document.getElementById('left')  .classList.remove('active');
-    document.getElementById('right') .classList.remove('active');
-    document.getElementById('pill-vibration').classList.remove('on');
-    document.getElementById('pill-mouse')   .classList.remove('on');
-    document.getElementById('pill-thermals').classList.remove('on');
-  }
+  if (outsideVenn) evaluateZones(x, y);
   dragging = false;
 });
 
 /* ═══════════════════════════════════════
    PANEL OPEN / CLOSE
 ═══════════════════════════════════════ */
-const panel      = document.getElementById('vibration-panel');
-const mousePanel = document.getElementById('mouse-panel');
+const panel = document.getElementById('modality-panel');
 
-function openPanel()       { panel.classList.add('open'); }
-function closePanel()      { panel.classList.remove('open'); }
-function openMousePanel()  { mousePanel.classList.add('open'); }
-function closeMousePanel() { mousePanel.classList.remove('open'); stopMouseTracking(); }
+function closePanel() {
+  panel.classList.remove('open');
+  if (mouseRunning) stopMouseTracking();
+}
 
-document.getElementById('btn-close-panel')      .addEventListener('click', closePanel);
-document.getElementById('btn-close-mouse-panel').addEventListener('click', closeMousePanel);
+document.getElementById('btn-close-panel').addEventListener('click', closePanel);
 
 /* ═══════════════════════════════════════
   LEGACY AUDIO ENGINE (disabled)
@@ -1234,7 +1246,6 @@ function barColor(value) {
 async function sendVibration() {
   const button = document.getElementById('btn-vibration-send');
   const status = document.getElementById('vibration-status');
-  const badge = document.getElementById('vibration-panel-badge');
   const params = new URLSearchParams({
     pwm: document.getElementById('vibration-intensity').value,
     'vibration-duration': document.getElementById('vibration-duration').value,
@@ -1245,21 +1256,42 @@ async function sendVibration() {
   button.disabled = true;
   status.className = 'vibration-status';
   status.textContent = 'Sending pulse pattern...';
-  badge.textContent = 'SENDING';
 
   try {
     const response = await fetch(`http://localhost:5000/vibration/loop?${params}`, { method: 'GET' });
     const result = await response.json();
     if (!response.ok || result.status !== 'ok') throw new Error(result.message || 'Vibration request failed');
     status.className = 'vibration-status ok';
-    status.textContent = `Sent ${result.nb_repetitions} pulse${result.nb_repetitions === 1 ? '' : 's'} at ${result.pwm}% intensity.`;
-    badge.textContent = 'SENT';
-    badge.classList.add('on');
+    status.textContent = `Sent ${result.nb_repetitions} pulse${result.nb_repetitions === 1 ? '' : 's'} at PWM ${result.pwm}/255.`;
   } catch (error) {
     status.className = 'vibration-status err';
     status.textContent = `Could not send vibration: ${error.message}`;
-    badge.textContent = 'ERROR';
-    badge.classList.remove('on');
+  } finally {
+    button.disabled = false;
+  }
+}
+
+async function sendThermal() {
+  const button = document.getElementById('btn-thermal-send');
+  const status = document.getElementById('thermal-status');
+  const params = new URLSearchParams({
+    duration: document.getElementById('thermal-duration').value,
+    pwm: document.getElementById('thermal-intensity').value
+  });
+
+  button.disabled = true;
+  status.className = 'vibration-status';
+  status.textContent = 'Sending heat settings...';
+
+  try {
+    const response = await fetch(`http://localhost:5000/thermal/on?${params}`, { method: 'GET' });
+    const result = await response.json();
+    if (!response.ok || result.status !== 'ok') throw new Error(result.message || 'Thermal request failed');
+    status.className = 'vibration-status ok';
+    status.textContent = `Sent ${result.duration} ms at PWM ${result.pwm}/255.`;
+  } catch (error) {
+    status.className = 'vibration-status err';
+    status.textContent = `Could not send heat settings: ${error.message}`;
   } finally {
     button.disabled = false;
   }
@@ -1283,24 +1315,26 @@ function startMouseTracking() {
   lastMouseX = null; lastMouseY = null; lastMouseT = null;
   document.getElementById('btn-mouse-start').disabled = true;
   document.getElementById('btn-mouse-stop').disabled  = false;
-  const badge = document.getElementById('mouse-panel-badge');
+  const badge = document.getElementById('mouse-section-badge');
   badge.textContent = 'ACTIF'; badge.classList.add('on');
   mouseTickInt = setInterval(mouseMainTick, 80);
   fetch('http://localhost:5000/mouse/speed?start=1', { method: 'GET' }).then(r => r.json()).catch(() => {});
 }
 
-function stopMouseTracking() {
+function stopMouseTracking(sendRequest = true) {
   if (!mouseRunning) return;
   mouseRunning = false;
   clearInterval(mouseTickInt);
   document.getElementById('btn-mouse-start').disabled = false;
   document.getElementById('btn-mouse-stop').disabled  = true;
-  const badge = document.getElementById('mouse-panel-badge');
+  const badge = document.getElementById('mouse-section-badge');
   badge.textContent = 'INACTIF'; badge.classList.remove('on');
   document.getElementById('mouse-state-txt').textContent = 'Stopped.';
   updateMouseDisplay(0);
   mctx.clearRect(0,0,mcvs.width,mcvs.height);
-  fetch('http://localhost:5000/mouse/speed?start=0', { method: 'GET' }).then(r => r.json()).catch(() => {});
+  if (sendRequest) {
+    fetch('http://localhost:5000/mouse/speed?start=0', { method: 'GET' }).then(r => r.json()).catch(() => {});
+  }
 }
 
 document.addEventListener('mousemove', e => {
@@ -1420,14 +1454,6 @@ function onMouseDeviceChange(mouseName) {
     });
 }
 
-// Load mouse list as soon as the mouse panel first opens
-const _origOpenMouse = openMousePanel;
-openMousePanel = function() {
-  _origOpenMouse();
-  if (document.getElementById('mouse-device-select').options[0]?.value === '') {
-    loadMouseNames();
-  }
-};
 </script>
 </body>
 </html>
