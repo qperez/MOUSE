@@ -1232,7 +1232,7 @@ function barColor(value) {
 
 async function sendVibration() {
   const button = document.getElementById('btn-vibration-send');
-  const status = document.getElementById('vibration-status');
+
   const params = new URLSearchParams({
     pwm: document.getElementById('vibration-intensity').value,
     'vibration-duration': document.getElementById('vibration-duration').value,
@@ -1240,48 +1240,34 @@ async function sendVibration() {
     'time-between-vibration': document.getElementById('vibration-delay').value
   });
 
-  button.disabled = true;
-  status.className = 'vibration-status';
-  status.textContent = 'Sending pulse pattern...';
 
   try {
     const response = await fetch(`http://localhost:5000/vibration/loop?${params}`, { method: 'GET' });
     const result = await response.json();
     if (!response.ok || result.status !== 'ok') throw new Error(result.message || 'Vibration request failed');
-    status.className = 'vibration-status ok';
-    status.textContent = `Sent ${result.nb_repetitions} pulse${result.nb_repetitions === 1 ? '' : 's'} at PWM ${result.pwm}/255.`;
+
   } catch (error) {
-    status.className = 'vibration-status err';
-    status.textContent = `Could not send vibration: ${error.message}`;
-  } finally {
-    button.disabled = false;
-  }
+    print(error)
+  } 
 }
 
 async function sendThermal() {
   const button = document.getElementById('btn-thermal-send');
-  const status = document.getElementById('thermal-status');
   const params = new URLSearchParams({
     duration: document.getElementById('thermal-duration').value,
     pwm: document.getElementById('thermal-intensity').value
   });
 
-  button.disabled = true;
-  status.className = 'vibration-status';
-  status.textContent = 'Sending heat settings...';
+
 
   try {
     const response = await fetch(`http://localhost:5000/thermal/on?${params}`, { method: 'GET' });
     const result = await response.json();
     if (!response.ok || result.status !== 'ok') throw new Error(result.message || 'Thermal request failed');
-    status.className = 'vibration-status ok';
-    status.textContent = `Sent ${result.duration} ms at PWM ${result.pwm}/255.`;
+
   } catch (error) {
-    status.className = 'vibration-status err';
-    status.textContent = `Could not send heat settings: ${error.message}`;
-  } finally {
-    button.disabled = false;
-  }
+    print(error)
+  } 
 }
 
 /* ═══════════════════════════════════════
