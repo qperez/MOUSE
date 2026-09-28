@@ -1,23 +1,30 @@
 from flask import Blueprint, request, abort, jsonify
 
-from mouse_server_serial_hub.mouse.shared.shared_thermal_state import SharedThermalState
+from mouse_server_serial_hub.mouse.shared.shared_haptic_service import SharedHapticService
 
 vibration_bp = Blueprint('vibration', __name__)
 
-shared_thermal_state = SharedThermalState()
+shared_haptic_service = SharedHapticService()
+
 
 @vibration_bp.route("/on")
 def on():
-    vibration_duration = request.args.get("duration")
-    pwm_value = request.args.get("pwm")
-    return jsonify(status="ok", action="vibration on", duration=int(vibration_duration), pwm=int(pwm_value))
+    vibration_duration = int(request.args.get("duration"))
+    pwm_value = int(request.args.get("pwm"))
+
+    shared_haptic_service.vibration_to_serial(vibration_duration, pwm_value)
+
+    return jsonify(status="ok", action="vibration on", duration=vibration_duration, pwm=pwm_value)
 
 @vibration_bp.route("/loop")
 def loop():
-    vibration_duration = request.args.get("vibration-duration")
-    pwm_value = request.args.get("pwm")
-    nb_repetitions = request.args.get("nb-repetitions")
-    time_between_vibration = request.args.get("time-between-vibration")
+    vibration_duration = int(request.args.get("vibration-duration"))
+    pwm_value = int(request.args.get("pwm"))
+    nb_repetitions = int(request.args.get("nb-repetitions"))
+    time_between_vibration = int(request.args.get("time-between-vibration"))
+
+    shared_haptic_service.vibration_to_serial(vibration_duration, pwm_value, nb_repetitions, time_between_vibration)
+
     return jsonify(status="ok",
                    action="vibration on",
                    vibration_duration=int(vibration_duration),

@@ -3,16 +3,20 @@ from time import sleep
 import psutil
 
 from mouse_server_serial_hub.mouse.serial_mouse.serial_singleton import SerialSingleton
-from mouse_server_serial_hub.mouse.shared.shared_thermal_state import SharedThermalState
+#from mouse_server_serial_hub.mouse.shared.shared_thermal_state import SharedThermalState
+from mouse_server_serial_hub.mouse.shared.shared_haptic_service import SharedHapticService
+
+
 
 serial_singleton = SerialSingleton()
-shared_thermal_state = SharedThermalState()
+shared_thermal_service = SharedHapticService()
+
 
 def hardware_infos_over_serial_thread():
     rapl_energy_start = get_rapl_value()
 
     while True:
-        if shared_thermal_state.get_thermal_state_gui() and serial_singleton is not None:
+        if shared_thermal_service.get_thermal_state() and serial_singleton is not None:
                 values = build_metrics(rapl_energy_start)
                 serial_singleton.write_message(values)
         sleep(0.5)

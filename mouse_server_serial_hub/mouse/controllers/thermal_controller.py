@@ -1,15 +1,21 @@
 from flask import Blueprint, request, abort, jsonify
 
 from mouse_server_serial_hub.mouse.shared.shared_thermal_state import SharedThermalState
+from mouse_server_serial_hub.mouse.shared.shared_haptic_service import SharedHapticService
+
 
 thermal_bp = Blueprint('thermal', __name__)
 
 shared_thermal_state = SharedThermalState()
+shared_haptic_service = SharedHapticService()
 
-@thermal_bp.route("/heat")
+@thermal_bp.route("/on")
 def thermal_poweron():
     heating_duration = request.args.get("duration")
     pwm_value = request.args.get("pwm")
+
+    shared_haptic_service.thermal_to_serial(heating_duration, pwm_value)
+
     return jsonify(status="ok", action="heat", duration=int(heating_duration), pwm=int(pwm_value))
 
 

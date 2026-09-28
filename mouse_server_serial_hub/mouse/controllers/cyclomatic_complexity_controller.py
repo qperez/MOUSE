@@ -1,7 +1,7 @@
 from flask import Blueprint, request, abort, jsonify
 
 from mouse_server_serial_hub.mouse.services.cyclomatic_complexity_service import shared_cyclomatic_complexity_object
-from mouse_server_serial_hub.mouse.services.thermal_service import shared_thermal_state
+from mouse_server_serial_hub.mouse.services.live_cpu_service import shared_thermal_state
 from mouse_server_serial_hub.mouse.shared.shared_cyclomatic_complexity_object import SharedCyclomaticComplexityObject
 from mouse_server_serial_hub.mouse.shared.shared_thermal_state import SharedThermalState
 

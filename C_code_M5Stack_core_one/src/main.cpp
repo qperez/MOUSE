@@ -22,8 +22,9 @@ double energy_cpu_wh = 0;
 String class_name;
 String method_name;
 int cyclomatic_complexity = 0;
-volatile int pwm_value_cyclo_complex_thermal = 0;
-volatile int pwm_value_cyclo_complex_erm = 0;
+volatile int pwm_value_thermal = 0;
+volatile int pwm_duration_thermal = 1000; // in milliseconds
+volatile int pwm_value_erm = 0;
 volatile int pwm_value_nb_pulse_erm = 0;
 
 
@@ -163,9 +164,11 @@ void create_bottom_buttons(void)
 }
 
 //timer ERM
-bool state = false;
-int pulse_count = 0;
+volatile bool state = false;
+volatile int pulse_count = 0;
 volatile bool run_timer = false;
+volatile uint32_t pwm_duration_erm_ms = 100;
+volatile uint32_t pwm_pulse_delay_erm_ms = 0;
 esp_timer_handle_t erm_timer;
 
 //timer thermal_pad
@@ -177,37 +180,53 @@ void stop_thermal_pad(void *arg){
 
 void start_thermal_pad()
 {
-    analogWrite(PWM_PIN_PAD, 255);
+    analogWrite(PWM_PIN_PAD, pwm_value_thermal);
     esp_timer_stop(thermal_pad_timer);
-    esp_timer_start_once(thermal_pad_timer, 5000000); // 3 000 000 µs = 3 s
+    esp_timer_start_once(thermal_pad_timer, pwm_duration_thermal * 1000);
 }
 
-void toggle_pwm(void *arg) {
-  state = !state;
+void toggle_erm(void *arg) {
+    if (!run_timer) {
+        return;
+    }
 
-  if(run_timer){
     if (state) {
-        analogWrite(PWM_PIN_ERM, pwm_value_cyclo_complex_erm);
-    } else {
+        // The ON phase has ended.
+        state = false;
         analogWrite(PWM_PIN_ERM, 0);
-        // Une impulsion complète = ON puis OFF
         pulse_count++;
 
         if (pulse_count >= pwm_value_nb_pulse_erm) {
             run_timer = false;
             pulse_count = 0;
-            analogWrite(PWM_PIN_ERM, 0);
+            return;
         }
+
+        // Wait before starting the next pulse.
+        esp_timer_start_once(erm_timer, max(1ULL, pwm_pulse_delay_erm_ms * 1000ULL));
+    } else {
+        // The delay has ended; start the next pulse.
+        state = true;
+        analogWrite(PWM_PIN_ERM, pwm_value_erm);
+        esp_timer_start_once(erm_timer, pwm_duration_erm_ms * 1000ULL);
     }
-  }
 }
 
 void startVibration()
 {
+    esp_timer_stop(erm_timer);
+
+    if (pwm_value_nb_pulse_erm <= 0 || pwm_duration_erm_ms == 0) {
+        run_timer = false;
+        analogWrite(PWM_PIN_ERM, 0);
+        return;
+    }
+
     run_timer = true;
     pulse_count = 0;
-    state = false;
-    analogWrite(PWM_PIN_ERM, 0);
+    state = true;
+    analogWrite(PWM_PIN_ERM, pwm_value_erm);
+    esp_timer_start_once(erm_timer, pwm_duration_erm_ms * 1000ULL);
 }
 
 void setup()
@@ -215,14 +234,13 @@ void setup()
     M5.begin();
 
     const esp_timer_create_args_t erm_timer_args = {
-        .callback = &toggle_pwm,
+        .callback = &toggle_erm,
         .arg = NULL,
         .dispatch_method = ESP_TIMER_TASK,
         .name = "erm_timer"
     };
 
     esp_timer_create(&erm_timer_args, &erm_timer);
-    esp_timer_start_periodic(erm_timer, 200000); // 100 ms
 
     const esp_timer_create_args_t timer_thermal_pad_args = {
         .callback = &stop_thermal_pad,
@@ -429,11 +447,11 @@ void handle_mode3() { /* lecture passive, UI déjà en place via on_enter */
             class_name           = json_doc["class-name"].as<String>();
             method_name          = json_doc["method-name"].as<String>();
             cyclomatic_complexity = json_doc["cyclomatic-complexity"].as<int>();
-            pwm_value_cyclo_complex_thermal = json_doc["pwm-value-thermal"].as<int>();
-            pwm_value_cyclo_complex_erm = json_doc["pwm-value-erm"].as<int>();
+            pwm_value_thermal = json_doc["pwm-value-thermal"].as<int>();
+            pwm_value_erm = json_doc["pwm-value-erm"].as<int>();
             pwm_value_nb_pulse_erm = json_doc["pwm-nb-pulse-erm"].as<int>();
 
-            Serial.println(pwm_value_cyclo_complex_erm);
+            Serial.println(pwm_value_erm);
 
             lv_label_set_text_fmt(label_class,            "Class: %s", class_name.c_str());
             lv_label_set_text_fmt(label_method,           "Method: %s", method_name.c_str());
@@ -442,8 +460,39 @@ void handle_mode3() { /* lecture passive, UI déjà en place via on_enter */
             start_thermal_pad();
         }
     }
-    //analogWrite(PWM_PIN_ERM, pwm_value_cyclo_complex_erm);
+    //analogWrite(PWM_PIN_ERM, pwm_value_erm);
 
+}
+
+void handle_mode4() {
+    if (Serial.available()){
+        String json_string = Serial.readStringUntil('\n');
+        json_string.trim();
+
+        JsonDocument json_doc;
+        deserializeJson(json_doc, json_string);
+
+        Serial.println(json_string);
+        
+        if(json_doc["pwm_value_erm"].is<int>()){
+            Serial.println("Received pwm_value_erm");
+            pwm_value_erm = json_doc["pwm_value_erm"].as<int>();
+            pwm_value_nb_pulse_erm = json_doc["pwm_nb_pulse_erm"].as<int>();
+            pwm_duration_erm_ms = json_doc["pwm_duration_erm"].as<uint32_t>();
+            pwm_pulse_delay_erm_ms = json_doc["pwm_pulse_delay_erm"].as<uint32_t>();
+            
+            lv_label_set_text_fmt(label_pwm,              "PWM: %d",   pwm_value_erm);
+            startVibration();
+        }
+
+        if(json_doc["pwm_value_thermal"].is<int>()){
+            Serial.println("Received pwm_value_thermal");
+            pwm_value_thermal = json_doc["pwm_value_thermal"].as<int>();
+            pwm_duration_thermal = json_doc["pwm_duration_thermal"].as<int>();
+
+            start_thermal_pad();
+        }
+    }
 }
 
 /*====================*/
@@ -451,10 +500,11 @@ void handle_mode3() { /* lecture passive, UI déjà en place via on_enter */
 /*====================*/
 
 const Mode modes[] = {
-    { nullptr,                      nullptr,                       handle_mode0 },
-    { nullptr,                      nullptr,                       handle_mode1 },
-    { enter_mode2,                  nullptr,                       nullptr      },
-    { enter_mode_cyclo_complexity,  exit_mode_cyclo_complexity,    handle_mode3 },
+    { nullptr,                      nullptr,                       handle_mode0 }, // read cpu metrics and link to thermal
+    { nullptr,                      nullptr,                       handle_mode1 }, // manual thermal pwm control
+    { enter_mode2,                  nullptr,                       nullptr      }, // stop thermal
+    { enter_mode_cyclo_complexity,  exit_mode_cyclo_complexity,    handle_mode3 }, // read cyclomatic complexity and link to thermal and erm
+    { nullptr,                      nullptr,                       handle_mode4 }, // read pwm values from sharedHapticService
 };
 
 //taille du tableau / taille d'un mode

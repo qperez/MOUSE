@@ -53,29 +53,35 @@ if __name__ == "__main__":
     from mouse_server_serial_hub.mouse.controllers.mouse_controller import mouse_bp
     from mouse_server_serial_hub.mouse.controllers.serial_controller import serial_bp
     from mouse_server_serial_hub.mouse.controllers.thermal_controller import thermal_bp
-    from mouse_server_serial_hub.mouse.controllers.cyclomatic_complexity_controller import cyclomatic_complexity_bp
-    from mouse_server_serial_hub.mouse.services.cyclomatic_complexity_service import cyclomatic_complexity_over_serial_thread
+
     from mouse_server_serial_hub.mouse.services.mouse_service import mouse_speed_thread
-    from mouse_server_serial_hub.mouse.services.thermal_service import hardware_infos_over_serial_thread
-    from mouse_server_serial_hub.mouse.shared.shared_thermal_state import SharedThermalState
+
+    from mouse_server_serial_hub.mouse.shared.shared_haptic_service import SharedHapticService
+
+    # from mouse_server_serial_hub.mouse.controllers.cyclomatic_complexity_controller import cyclomatic_complexity_bp
+    # from mouse_server_serial_hub.mouse.services.cyclomatic_complexity_service import cyclomatic_complexity_over_serial_thread
+    # from mouse_server_serial_hub.mouse.services.thermal_service import hardware_infos_over_serial_thread
+    # from mouse_server_serial_hub.mouse.shared.shared_thermal_state import SharedThermalState
 
     app.register_blueprint(serial_bp, url_prefix="/serial")
     app.register_blueprint(thermal_bp, url_prefix="/thermal")
     app.register_blueprint(mouse_bp, url_prefix="/mouse")
-    app.register_blueprint(cyclomatic_complexity_bp, url_prefix="/metric")
+    # app.register_blueprint(cyclomatic_complexity_bp, url_prefix="/metric")
     app.register_blueprint(vibration_bp, url_prefix="/vibration")
 
     ms_speed_thread = threading.Thread(target=mouse_speed_thread)
     ms_speed_thread.start()
 
-    hw_infos_over_serial_thread = threading.Thread(target=hardware_infos_over_serial_thread)
-    hw_infos_over_serial_thread.start()
+    # hw_infos_over_serial_thread = threading.Thread(target=hardware_infos_over_serial_thread)
+    # hw_infos_over_serial_thread.start()
 
-    cyclomatic_complexity_over_serial_thread = threading.Thread(target=cyclomatic_complexity_over_serial_thread)
-    cyclomatic_complexity_over_serial_thread.start()
+    # cyclomatic_complexity_over_serial_thread = threading.Thread(target=cyclomatic_complexity_over_serial_thread)
+    # cyclomatic_complexity_over_serial_thread.start()
 
-    shared_thermal_state = SharedThermalState()
-    shared_thermal_state.set_thermal_state_ide(True)
+
+    shared_haptic_service = SharedHapticService()
+    shared_haptic_service.set_thermal_state(True)
+    shared_haptic_service.set_vibration_state(True)
 
     socketio.start_background_task(send_cpu)
     socketio.run(

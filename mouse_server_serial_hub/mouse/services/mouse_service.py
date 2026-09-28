@@ -22,5 +22,4 @@ def mouse_speed_thread():
             mouse_singleton.set_mouse_speed(mouse_speed_value)
         else :
             mouse_singleton.set_mouse_speed(1)
-            print("reset")
         sleep(1)
