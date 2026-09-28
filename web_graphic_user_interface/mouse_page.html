@@ -23,7 +23,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 28px 20px 40px;
+  padding: 20px 20px 32px;
   overflow-x: hidden;
 }
 
@@ -31,11 +31,11 @@ body {
 .app-header {
   width: 100%;
   max-width: 700px;
-  margin-bottom: 22px;
+  margin-bottom: 14px;
   text-align: center;
 }
 .app-header h1 {
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: #1a1a2e;
   letter-spacing: .02em;
@@ -43,7 +43,7 @@ body {
 }
 .app-header .subtitle {
   margin-top: 5px;
-  font-size: 11.5px;
+  font-size: 13px;
   color: #6b7280;
 }
 .app-header .subtitle strong { color: #374151; }
@@ -51,7 +51,7 @@ body {
 /* ── CPU BAR CARD ── */
 .cpu-bar-card {
   width: 100%;
-  max-width: 640px;
+  max-width: 1020px;
   background: #fff;
   border-radius: 16px;
   box-shadow: 0 2px 12px rgba(0,0,0,.07);
@@ -72,7 +72,7 @@ body {
   padding-bottom: 0;
   margin-bottom: 0;
 }
-.cpu-bar-lbl { font-size: 11px; font-weight: 700; color: #888; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; }
+.cpu-bar-lbl { font-size: 12px; font-weight: 700; color: #888; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; }
 .cpu-bar-track {
   flex: 1;
   height: 10px;
@@ -87,21 +87,21 @@ body {
   border-radius: 6px;
   transition: width .15s, background .3s;
 }
-.cpu-bar-pct { font-size: 13px; font-weight: 800; color: #1a1a2e; min-width: 38px; text-align: right; }
+.cpu-bar-pct { font-size: 14px; font-weight: 800; color: #1a1a2e; min-width: 38px; text-align: right; }
 
 /* toggle button */
 .cpu-toggle-row {
   display: flex;
   justify-content: flex-end;
   width: 100%;
-  max-width: 640px;
+  max-width: 1020px;
   margin-bottom: 8px;
 }
 .cpu-toggle-btn {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 700;
   color: #888;
   background: transparent;
@@ -116,27 +116,30 @@ body {
 
 /* ── VENN DIAGRAM ── */
 #venn {
+  grid-area: diagram;
   position: relative;
-  width: 640px;
-  height: 460px;
+  justify-self: center;
+  width: min(1100px, 100%);
+  aspect-ratio: 32 / 23;
   background: #fff;
   border-radius: 20px;
   box-shadow: 0 8px 32px rgba(0,0,0,.10);
   margin-bottom: 16px;
   overflow: visible;
+  touch-action: none;
 }
 
 .circle {
   position: absolute;
-  width: 260px;
-  height: 260px;
+  width: 40.625%;
+  aspect-ratio: 1;
   border-radius: 50%;
   transition: filter .3s, background .3s;
 }
 
-#left   { left: 120px; top: 80px;  background: rgba(59,111,216,0.28); }
-#right  { left: 260px; top: 80px;  background: rgba(220,70,70,0.28); }
-#bottom { left: 190px; top: 190px; background: rgba(29,158,117,0.28); }
+#left   { left: 18.75%; top: 17.391%; background: rgba(59,111,216,0.28); }
+#right  { left: 40.625%; top: 17.391%; background: rgba(220,70,70,0.28); }
+#bottom { left: 29.688%; top: 41.304%; background: rgba(29,158,117,0.28); }
 
 #left.active   { background: rgba(59,111,216,0.55); filter: drop-shadow(0 0 14px rgba(59,111,216,.5)); }
 #right.active  { background: rgba(220,70,70,0.55);  filter: drop-shadow(0 0 14px rgba(220,70,70,.5)); }
@@ -145,14 +148,14 @@ body {
 .label {
   position: absolute;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 16px;
   letter-spacing: .03em;
   pointer-events: none;
   z-index: 5;
 }
-#label-left   { left: 132px; top: 34px; color: var(--blue); }
-#label-right  { left: 365px; top: 34px; color: var(--red); }
-#label-bottom { left: 250px; top: 408px; color: var(--green); }
+#label-left   { left: 39.063%; top: 7.391%; transform: translateX(-50%); color: var(--blue); }
+#label-right  { left: 60.938%; top: 7.391%; transform: translateX(-50%); color: var(--red); }
+#label-bottom { left: 50%; top: 88.696%; transform: translateX(-50%); color: var(--green); }
 
 /* Permanent pointer (always visible) */
 #pointer {
@@ -172,6 +175,7 @@ body {
 
 /* Zone status bar */
 #zone-status {
+  grid-area: status;
   display: flex;
   gap: 6px;
   justify-content: center;
@@ -182,7 +186,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: .04em;
   text-transform: uppercase;
@@ -201,28 +205,47 @@ body {
   background: currentColor;
 }
 
-/* ── PANELS (shared) ── */
+/* ── DIAGRAM AND SETTINGS LAYOUT ── */
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  align-items: start;
+  gap: 24px;
+  width: min(1700px, 100%);
+}
+.diagram-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  width: 100%;
+}
+
+/* ── MODALITY SETTINGS ── */
 .side-panel {
-  position: fixed;
-  top: 0;
-  height: 100vh;
-  width: min(var(--panel-w), 100vw);
+  position: sticky;
+  top: 16px;
+  height: calc(100vh - 32px);
+  width: 100%;
   background: #fff;
-  z-index: 200;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transition: left .38s cubic-bezier(.4,0,.2,1), right .38s cubic-bezier(.4,0,.2,1);
 }
 
-/* Shared modality drawer */
 #modality-panel {
-  right: calc(-1 * var(--panel-w));
-  left: auto;
-  box-shadow: -6px 0 28px rgba(0,0,0,.12);
-  border-left: 1px solid #e8ecf2;
+  border: 1px solid #e8ecf2;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.08);
 }
-#modality-panel.open { right: 0; }
+#modality-panel.open { display: flex; }
+.system-settings {
+  padding-bottom: 16px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid #edf0f2;
+}
+.system-settings .status-bar { justify-content: flex-start; margin-bottom: 10px; }
+.system-settings .serial-config { width: 100%; max-width: none; margin: 0; flex-wrap: wrap; }
 
 /* Panel header */
 .panel-header {
@@ -238,14 +261,13 @@ body {
   display: flex; align-items: center; justify-content: center;
   font-size: 15px; flex-shrink: 0;
 }
-.panel-header h2 { font-size: 13px; font-weight: 700; letter-spacing: .03em; }
+.panel-header h2 { font-size: 15px; font-weight: 700; letter-spacing: .03em; }
 .panel-badge {
-  font-size: 9px; font-weight: 800; letter-spacing: .06em;
+  font-size: 10px; font-weight: 800; letter-spacing: .06em;
   border-radius: 99px; padding: 2px 8px; text-transform: uppercase;
   background: #eee; color: #999;
   transition: background .3s, color .3s;
 }
-.panel-badge.on { }
 .btn-close {
   background: none; border: none; cursor: pointer;
   width: 28px; height: 28px; border-radius: 8px;
@@ -265,7 +287,7 @@ body {
 .modality-actions { display: flex; gap: 8px; margin-top: 12px; }
 .modality-actions .pf-btn { flex: 1; }
 .section-heading { display: flex; align-items: center; justify-content: space-between; margin: 14px 0 8px; }
-.section-heading h2 { font-size: 12px; font-weight: 800; color: #37474f; }
+.section-heading h2 { font-size: 13px; font-weight: 800; color: #37474f; }
 
 /* Panel body */
 .panel-body { flex: 1; overflow-y: auto; padding: 16px; }
@@ -277,44 +299,17 @@ body {
   border: 1px solid #e8ecf2; margin-bottom: 14px;
 }
 
-/* Speed gauge */
-.gauge-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 14px 0 10px;
-}
-.gauge-arc-svg { overflow: visible; }
-.gauge-value {
-  font-size: 26px; font-weight: 800; color: #1a1a2e; letter-spacing: -.02em;
-}
-.gauge-unit { font-size: 11px; color: #888; font-weight: 600; }
-.gauge-label { font-size: 11px; color: #aaa; margin-top: -4px; }
-
-/* Foot indicators */
-.foot-row { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; }
-.foot {
-  width: 20px; height: 30px;
-  border-radius: 9px 9px 5px 5px;
-  border: 1.5px solid #ddd;
-  transition: background .1s, transform .1s, border-color .1s;
-  background: transparent;
-}
-.foot.active { transform: translateY(-4px); border-color: transparent; }
-.foot-lbl { font-size: 11px; color: #aaa; }
-
 /* Section labels */
-.sec { font-size: 10px; font-weight: 800; color: #aaa; letter-spacing: .1em; text-transform: uppercase; margin: 14px 0 8px; }
+.sec { font-size: 11px; font-weight: 800; color: #aaa; letter-spacing: .1em; text-transform: uppercase; margin: 14px 0 8px; }
 
 /* Control rows */
 .ctrl-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-.ctrl-row label { font-size: 11.5px; color: #666; min-width: 105px; text-align: right; flex-shrink: 0; }
+.ctrl-row label { font-size: 13px; color: #666; min-width: 105px; text-align: right; flex-shrink: 0; }
 .ctrl-row input[type=range] { flex: 1; width: auto; accent-color: var(--green); }
 #mouse-section .ctrl-row input[type=range] { accent-color: var(--blue); }
 #vibration-section .ctrl-row input[type=range] { accent-color: var(--green); }
 #thermal-section .ctrl-row input[type=range] { accent-color: var(--red); }
-.ctrl-row .vv { font-size: 11px; font-weight: 700; color: #333; min-width: 30px; }
+.ctrl-row .vv { font-size: 12px; font-weight: 700; color: #333; min-width: 30px; }
 .ctrl-row select {
   flex: 1; font-size: 11.5px;
   border: 1px solid #e0e4eb; border-radius: 6px;
@@ -333,7 +328,7 @@ body {
   border-radius: 8px;
   background: #f8f9fb;
   color: #777;
-  font-size: 11px;
+  font-size: 12px;
 }
 .vibration-status::before {
   content: '';
@@ -352,40 +347,12 @@ body {
 #thermal-status.ok { color: #8b2929; background: #fff1f1; border-color: #f5caca; }
 #thermal-status.ok::before { background: var(--red); }
 
-/* Phase log */
-.phase-log {
-  font-size: 11px; color: #999; margin-bottom: 12px;
-  display: flex; align-items: center; gap: 6px;
-  background: #f8f9fb; border-radius: 8px; padding: 7px 10px;
-  min-height: 30px;
-}
-.phase-log .pdot {
-  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
-  background: transparent; transition: background .2s;
-}
-
-/* Sim pills */
-.sim-row { display: flex; flex-wrap: wrap; gap: 5px; }
-.sim-pill {
-  padding: 4px 10px; border-radius: 99px;
-  border: 1px solid #e0e4eb; background: #f8f9fb; color: #666;
-  font-size: 10px; font-weight: 700; cursor: pointer;
-  transition: all .12s; white-space: nowrap;
-}
-.sim-pill:hover { border-color: var(--green); color: var(--green); background: #edfaf2; }
-
-/* Panel footer */
-.panel-footer {
-  padding: 12px 16px;
-  border-top: 1px solid #f0f2f5;
-  display: flex; gap: 8px; flex-shrink: 0;
-}
 .pf-btn {
   flex: 1; padding: 9px 0;
   border-radius: 9px;
   border: none;
   cursor: pointer;
-  font-size: 12px; font-weight: 700;
+  font-size: 13px; font-weight: 700;
   transition: all .15s;
   letter-spacing: .02em;
 }
@@ -415,7 +382,7 @@ body {
   line-height: 1;
   transition: color .3s;
 }
-.speed-unit { font-size: 12px; color: #aaa; font-weight: 600; margin-top: 2px; }
+.speed-unit { font-size: 13px; color: #aaa; font-weight: 600; margin-top: 2px; }
 .speed-bar-track {
   margin-top: 10px;
   height: 6px;
@@ -431,7 +398,7 @@ body {
   transition: width .1s, background .3s;
 }
 .speed-state-txt {
-  font-size: 11px; color: #aaa; margin-top: 6px;
+  font-size: 12px; color: #aaa; margin-top: 6px;
   min-height: 16px; transition: color .2s;
 }
 
@@ -446,7 +413,7 @@ body {
 }
 .mouse-select-row select {
   flex: 1;
-  font-size: 11.5px;
+  font-size: 13px;
   border: 1.5px solid #c8d4ec;
   border-radius: 8px;
   padding: 7px 10px;
@@ -475,7 +442,7 @@ body {
 @keyframes spin { to { transform: rotate(360deg); } }
 .mouse-select-status {
   margin-top: 5px;
-  font-size: 10.5px;
+  font-size: 12px;
   min-height: 14px;
   color: #aaa;
   transition: color .2s;
@@ -483,13 +450,10 @@ body {
 .mouse-select-status.ok  { color: var(--green); }
 .mouse-select-status.err { color: var(--red); }
 
-/* hidden inputs still needed by JS */
-#ms-min, #ms-max, #ms-smooth { display: none; }
-
 /* ── THREAD CONTROL CARD ── */
 .thread-card {
   width: 100%;
-  max-width: 640px;
+  max-width: 1020px;
   background: #fff;
   border-radius: 16px;
   box-shadow: 0 2px 12px rgba(0,0,0,.07);
@@ -500,7 +464,7 @@ body {
   margin-bottom: 10px;
 }
 .thread-card label {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: #555;
   white-space: nowrap;
@@ -511,7 +475,7 @@ body {
   accent-color: var(--green);
 }
 .thread-count-badge {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 800;
   color: #1a1a2e;
   min-width: 28px;
@@ -530,7 +494,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 700;
   color: #aaa;
   background: #fff;
@@ -575,13 +539,49 @@ body {
   cursor: pointer;
 }
 .serial-config button:disabled { opacity: .55; cursor: wait; }
-.serial-config-status { font-size: 11px; color: #777; }
+@media (max-width: 960px) {
+  .workspace { display: flex; flex-direction: column; }
+  body { padding: 20px 16px 32px; }
+  .diagram-column { max-width: 1020px; margin: 0 auto; }
+  .side-panel {
+    position: static;
+    width: 100%;
+    max-width: 1020px;
+    height: auto;
+    margin: 0 auto 20px;
+  }
+  .panel-body { overflow: visible; }
+  .thread-card { padding: 12px 14px; gap: 10px; }
+  .thread-card label { white-space: normal; }
+  #zone-status { flex-wrap: wrap; }
+}
+
+@media (min-width: 1500px) {
+  #modality-panel {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    width: 400px;
+    height: calc(100vh - 32px);
+    z-index: 200;
+  }
+}
+
+@media (min-width: 1770px) {
+  .workspace { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (min-width: 721px) and (max-height: 1100px) {
+  #venn { width: min(1100px, 100%, max(280px, calc((100vh - 290px) * 1.3913))); }
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
 </head>
 <body>
 
 <!-- ── HEADER ── -->
+<div class="workspace">
+<main class="diagram-column">
 <div class="app-header">
   <h1>PHASE - Pseudo-Haptic And haptic feedback for Software Energy perception</h1>
   <p class="subtitle">
@@ -589,23 +589,6 @@ body {
     <strong>Click + drag</strong> in the diagram → activate modalities
   </p>
 </div>
-
-<!-- ── STATUS BAR ── -->
-<div class="status-bar">
-  <span class="ws-status disconnected" id="ws-badge">
-    <span class="status-dot off" id="ws-dot"></span>
-    <span id="ws-txt">WebSocket…</span>
-  </span>
-  <span class="ws-status disconnected" id="serial-badge">
-    <span class="status-dot off" id="serial-dot"></span>
-    <span id="serial-txt">Serial disconnected</span>
-  </span>
-</div>
-<form class="serial-config" id="serial-config-form">
-  <input id="serial-port" type="text" placeholder="Serial port (e.g. COM5)" autocomplete="off">
-  <button type="submit" id="serial-port-btn">Connect</button>
-  <span class="serial-config-status" id="serial-config-status"></span>
-</form>
 
 <!-- ── THREAD CONTROL ── -->
 <div class="thread-card">
@@ -651,43 +634,61 @@ body {
     <span class="zdot"></span> Vibration
   </span>
 </div>
+</main>
 
-<!-- ══════════════ RIGHT PANEL — Vibration ══════════════ -->
+<!-- ══════════════ PERSISTENT SETTINGS PANEL ══════════════ -->
 <div id="modality-panel" class="side-panel">
-  <div class="panel-header">
+  <!-- <div class="panel-header">
     <div class="panel-header-left">
       <div class="panel-icon">M</div>
       <div>
-        <h2>Selected modalities</h2>
+        <h2>System &amp; feedback</h2>
         <span class="panel-badge" id="modality-panel-badge">NONE</span>
       </div>
     </div>
-    <button class="btn-close" id="btn-close-panel" aria-label="Close modality panel">✕</button>
-  </div>
+  </div> -->
 
   <div class="panel-body">
+    <section class="system-settings" aria-label="System settings">
+      <div class="sec">Connections</div>
+      <div class="status-bar">
+        <span class="ws-status disconnected" id="ws-badge">
+          <span class="status-dot off" id="ws-dot"></span>
+          <span id="ws-txt">WebSocket…</span>
+        </span>
+        <span class="ws-status disconnected" id="serial-badge">
+          <span class="status-dot off" id="serial-dot"></span>
+          <span id="serial-txt">Serial disconnected</span>
+        </span>
+      </div>
+      <form class="serial-config" id="serial-config-form">
+        <input id="serial-port" type="text" placeholder="Serial port (e.g. COM5)" autocomplete="off">
+        <button type="submit" id="serial-port-btn">Connect</button>
+      </form>
+    </section>
+
     <section id="vibration-section" class="modality-section" hidden>
     <div class="sec">Vibration</div>
-    <div class="vibration-status" id="vibration-status" role="status" aria-live="polite">Set the pulse pattern, then send it to the ERM motor.</div>
-    <div class="sec">Pulse pattern</div>
+    <!-- <div class="vibration-status" id="vibration-status" role="status" aria-live="polite">Set the pulse pattern, then send it to the ERM motor.</div>
+    <div class="sec">Pulse pattern</div> -->
     <div class="ctrl-row">
       <label for="vibration-intensity">PWM value</label>
-      <input type="range" id="vibration-intensity" min="0" max="255" value="153" step="1" oninput="document.getElementById('vibration-intensity-v').textContent=this.value">
+      <input type="range" id="vibration-intensity" min="0" max="255" value="153" step="1" data-value-output="vibration-intensity-v">
       <span class="vv" id="vibration-intensity-v">153</span>
     </div>
     <div class="ctrl-row">
       <label for="vibration-duration">Duration</label>
-      <input type="range" id="vibration-duration" min="10" max="1000" value="150" step="10" oninput="document.getElementById('vibration-duration-v').textContent=this.value+' ms'">
+      <input type="range" id="vibration-duration" min="10" max="1000" value="150" step="10" data-value-output="vibration-duration-v" data-suffix=" ms">
       <span class="vv" id="vibration-duration-v">150 ms</span>
     </div>
     <div class="ctrl-row">
       <label for="vibration-pulses">Number of pulses</label>
-      <input type="range" id="vibration-pulses" min="1" max="10" value="3" step="1" oninput="document.getElementById('vibration-pulses-v').textContent=this.value">
+      <input type="range" id="vibration-pulses" min="1" max="10" value="3" step="1" data-value-output="vibration-pulses-v">
       <span class="vv" id="vibration-pulses-v">3</span>
     </div>
     <div class="ctrl-row">
       <label for="vibration-delay">Delay</label>
-      <input type="range" id="vibration-delay" min="0" max="2000" value="250" step="10" oninput="document.getElementById('vibration-delay-v').textContent=this.value+' ms'">
+      <input type="range" id="vibration-delay" min="0" max="2000" value="250" step="10" data-value-output="vibration-delay-v" data-suffix=" ms">
       <span class="vv" id="vibration-delay-v">250 ms</span>
     </div>
     <div class="modality-actions">
@@ -698,17 +699,17 @@ body {
     <section id="thermal-section" class="modality-section" hidden>
       <div class="section-heading">
         <h2>Thermals</h2>
-        <span class="panel-badge" id="thermal-panel-badge">READY</span>
+        <!-- <span class="panel-badge" id="thermal-panel-badge">READY</span> -->
       </div>
-      <div class="vibration-status" id="thermal-status" role="status" aria-live="polite">Set the heat level and duration, then send it to the pad.</div>
+      <!-- <div class="vibration-status" id="thermal-status" role="status" aria-live="polite">Set the heat level and duration, then send it to the pad.</div> -->
       <div class="ctrl-row">
         <label for="thermal-intensity">PWM value</label>
-        <input type="range" id="thermal-intensity" min="0" max="255" value="77" step="1" oninput="document.getElementById('thermal-intensity-v').textContent=this.value">
+        <input type="range" id="thermal-intensity" min="0" max="255" value="77" step="1" data-value-output="thermal-intensity-v">
         <span class="vv" id="thermal-intensity-v">77</span>
       </div>
       <div class="ctrl-row">
         <label for="thermal-duration">Duration</label>
-        <input type="range" id="thermal-duration" min="100" max="5000" value="1000" step="100" oninput="document.getElementById('thermal-duration-v').textContent=this.value+' ms'">
+        <input type="range" id="thermal-duration" min="100" max="5000" value="1000" step="100" data-value-output="thermal-duration-v" data-suffix=" ms">
         <span class="vv" id="thermal-duration-v">1000 ms</span>
       </div>
       <div class="modality-actions">
@@ -747,16 +748,12 @@ body {
       <div class="mouse-select-status" id="mouse-select-status"></div>
     </div>
 
-    <!-- hidden range controls still used by JS for scaling -->
-    <input type="range" id="ms-min"    value="0"    min="0"   max="200">
-    <input type="range" id="ms-max"    value="1200" min="200" max="3000">
-    <input type="range" id="ms-smooth" value="8"    min="1"   max="20">
-
   <div class="modality-actions">
     <button class="pf-btn start-blue" id="btn-mouse-start" onclick="startMouseTracking()">▶ Start</button>
     <button class="pf-btn stop"       id="btn-mouse-stop"  onclick="stopMouseTracking()" disabled>■ Stop</button>
   </div>
 </section>
+</div>
 </div>
 </div>
 
@@ -791,7 +788,7 @@ async function loadSerialPort() {
     document.getElementById('serial-port').value = data.port || '';
     setSerialBadge(Boolean(data.serial_connected));
   } catch (error) {
-    document.getElementById('serial-config-status').textContent = 'Server unavailable';
+    setSerialBadge(false);
   }
 }
 
@@ -799,9 +796,7 @@ document.getElementById('serial-config-form').addEventListener('submit', async e
   event.preventDefault();
   const input = document.getElementById('serial-port');
   const button = document.getElementById('serial-port-btn');
-  const status = document.getElementById('serial-config-status');
   button.disabled = true;
-  status.textContent = 'Connecting...';
 
   try {
     const response = await fetch('http://localhost:5000/serial/port', {
@@ -811,9 +806,8 @@ document.getElementById('serial-config-form').addEventListener('submit', async e
     });
     const data = await response.json();
     setSerialBadge(Boolean(data.serial_connected));
-    status.textContent = data.serial_connected ? 'Connected' : 'Unavailable';
   } catch (error) {
-    status.textContent = 'Server unavailable';
+    setSerialBadge(false);
   } finally {
     button.disabled = false;
   }
@@ -832,6 +826,13 @@ socket.on('disconnect', () => {
 socket.on('system_status', data => {
   if (data.cpu !== undefined)             updateCPU(data.cpu);
   if (data.serial_connected !== undefined) setSerialBadge(data.serial_connected);
+});
+
+document.querySelectorAll('[data-value-output]').forEach(input => {
+  const output = document.getElementById(input.dataset.valueOutput);
+  const updateOutput = () => { output.textContent = input.value + (input.dataset.suffix || ''); };
+  input.addEventListener('input', updateOutput);
+  updateOutput();
 });
 
 function updateCPU(val) {
@@ -861,10 +862,6 @@ function adjustWorkers(n) {
   countLabel.textContent = n;
 }
 slider.addEventListener('input', () => adjustWorkers(+slider.value));
-window.addEventListener('wheel', e => {
-  e.preventDefault();
-  adjustWorkers(workers.length + (e.deltaY < 0 ? 1 : -1));
-}, { passive: false });
 
 /* ═══════════════════════════════════════
    CPU BAR TOGGLE
@@ -883,9 +880,10 @@ const venn    = document.getElementById('venn');
 const pointer = document.getElementById('pointer');
 let dragging  = false;
 
-// Centre géométrique initial du pointer (milieu du venn)
-pointer.style.left = '320px';
-pointer.style.top  = '230px';
+pointer.style.left = '50%';
+pointer.style.top = '50%';
+
+const diagramSize = { width: 640, height: 460 };
 
 const circles = {
   left:   { x: 250, y: 210, r: 130, endpoint: '/mouse/speed' },
@@ -906,6 +904,8 @@ let wasInMouseZone = false;
 let wasInRightZone = false;
 
 function evaluateZones(x, y) {
+  x *= diagramSize.width / venn.clientWidth;
+  y *= diagramSize.height / venn.clientHeight;
   const inVibration = inCircle(x, y, circles.bottom);
   const inMouse = inCircle(x, y, circles.left);
   const inRight = inCircle(x, y, circles.right);
@@ -925,14 +925,9 @@ function evaluateZones(x, y) {
   if (inRight && !wasInRightZone)       { sendRest(circles.right.endpoint, 1); wasInRightZone = true;  }
   else if (!inRight && wasInRightZone)  { sendRest(circles.right.endpoint, 0); wasInRightZone = false; }
 
-  const selectedCount = Number(inMouse) + Number(inRight) + Number(inVibration);
-  panel.classList.toggle('open', selectedCount > 0);
   document.getElementById('mouse-section').hidden = !inMouse;
   document.getElementById('thermal-section').hidden = !inRight;
   document.getElementById('vibration-section').hidden = !inVibration;
-  const panelBadge = document.getElementById('modality-panel-badge');
-  panelBadge.textContent = selectedCount ? `${selectedCount} SELECTED` : 'NONE';
-  panelBadge.classList.toggle('on', selectedCount > 0);
 
   // circle highlight
   document.getElementById('left')  .classList.toggle('active', inMouse);
@@ -945,45 +940,37 @@ function evaluateZones(x, y) {
   document.getElementById('pill-vibration').classList.toggle('on', inVibration);
 }
 
-venn.addEventListener('mousedown', e => {
+function movePointer(event) {
   const rect = venn.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-  pointer.style.left = x + 'px';
-  pointer.style.top  = y + 'px';
-  dragging = true;
-  evaluateZones(x, y);
-});
-window.addEventListener('mousemove', e => {
-  if (!dragging) return;
-  const rect = venn.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
   pointer.style.left = x + 'px';
   pointer.style.top  = y + 'px';
   evaluateZones(x, y);
-});
-window.addEventListener('mouseup', e => {
-  if (!dragging) return;
-  const rect = venn.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-  const outsideVenn = x < 0 || y < 0 || x > rect.width || y > rect.height;
-  if (outsideVenn) evaluateZones(x, y);
-  dragging = false;
-});
-
-/* ═══════════════════════════════════════
-   PANEL OPEN / CLOSE
-═══════════════════════════════════════ */
-const panel = document.getElementById('modality-panel');
-
-function closePanel() {
-  panel.classList.remove('open');
-  if (mouseRunning) stopMouseTracking();
 }
 
-document.getElementById('btn-close-panel').addEventListener('click', closePanel);
+venn.addEventListener('pointerdown', event => {
+  dragging = true;
+  venn.setPointerCapture(event.pointerId);
+  movePointer(event);
+});
+venn.addEventListener('pointermove', event => {
+  if (!dragging) return;
+  movePointer(event);
+});
+function finishDrag(event) {
+  if (!dragging) return;
+  try {
+    movePointer(event);
+  } finally {
+    dragging = false;
+  }
+}
+
+venn.addEventListener('pointerup', finishDrag);
+venn.addEventListener('pointercancel', finishDrag);
+venn.addEventListener('lostpointercapture', () => { dragging = false; });
+window.addEventListener('blur', () => { dragging = false; });
 
 /* ═══════════════════════════════════════
   LEGACY AUDIO ENGINE (disabled)
