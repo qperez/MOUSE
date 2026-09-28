@@ -1,63 +1,185 @@
 openapi: 3.0.3
 info:
-  title: Mouse Server Serial Hub API
-  description: >
-    REST API for managing X11 mouse settings, thermal states,
-    and cyclomatic complexity metrics, exposed via Flask.
+  title: MOUSE Serial Hub API
   version: 1.0.0
+  description: |
+    REST API exposed by the MOUSE Flask service for serial device setup, mouse
+    control, thermal/vibration haptics, and runtime status reporting.
+
+    The application also emits a Socket.IO event named system_status with the
+    current CPU percentage and serial connection state.
 
 servers:
   - url: http://127.0.0.1:5000
-    description: Local server
+    description: Local Flask server
 
 tags:
+  - name: Serial
+    description: Direct serial device configuration and status
   - name: Mouse
-    description: X11 mouse management
+    description: Mouse selection and speed controls
   - name: Thermal
-    description: Thermal state management (IDE / GUI)
+    description: Thermal actuator state toggles and heat pulses
+  - name: Vibration
+    description: Haptic vibration commands
   - name: Metric
-    description: Cyclomatic complexity metric ingestion
+    description: Cyclomatic complexity submissions and analysis metadata
 
 paths:
+  /serial/port:
+    get:
+      tags: [Serial]
+      summary: Get the configured serial port
+      description: Returns the currently configured serial port and whether it is connected.
+      operationId: getSerialPort
+      responses:
+        "200":
+          description: Serial port status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SerialPortResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+    post:
+      tags: [Serial]
+      summary: Reconfigure the serial port
+      description: Attempts to reconnect the serial device using the supplied port value.
+      operationId: setSerialPort
+      parameters:
+        - name: port
+          in: query
+          required: false
+          description: Serial port to use, such as COM5 or /dev/ttyACM1.
+          schema:
+            type: string
+            example: "COM5"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SerialPortRequest"
+      responses:
+        "200":
+          description: Serial port reconfigured successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SerialPortResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /thermal/on:
+    get:
+      tags: [Thermal]
+      summary: Trigger a thermal pulse on the hardware
+      description: Sends a heat command to the serial device with a duration and PWM intensity.
+      operationId: thermalPulse
+      parameters:
+        - name: duration
+          in: query
+          required: true
+          description: Heating duration in milliseconds or device-specific units used by the serial layer.
+          schema:
+            type: integer
+            example: 200
+        - name: pwm
+          in: query
+          required: true
+          description: PWM value for the thermal output. Must be between 0 and 255.
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 255
+            example: 120
+      responses:
+        "200":
+          description: Thermal output triggered successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HeatResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /thermal/gui:
+    get:
+      tags: [Thermal]
+      summary: Enable or disable GUI thermal state
+      description: When start=1, GUI mode is enabled and IDE mode is disabled. When start=0, GUI mode is disabled.
+      operationId: setThermalGui
+      parameters:
+        - name: start
+          in: query
+          required: true
+          description: 1 to enable GUI mode, 0 to disable it.
+          schema:
+            type: integer
+            enum: [0, 1]
+            example: 1
+      responses:
+        "200":
+          description: GUI thermal state updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StateToggleResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /thermal/ide:
+    get:
+      tags: [Thermal]
+      summary: Enable or disable IDE thermal state
+      description: When start=1, IDE mode is enabled and GUI mode is disabled. When start=0, IDE mode is disabled.
+      operationId: setThermalIde
+      parameters:
+        - name: start
+          in: query
+          required: true
+          description: 1 to enable IDE mode, 0 to disable it.
+          schema:
+            type: integer
+            enum: [0, 1]
+            example: 1
+      responses:
+        "200":
+          description: IDE thermal state updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StateToggleResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
 
   /mouse/names:
     get:
       tags: [Mouse]
-      summary: List available X11 mouse
-      description: Returns the list of mouse device names detected via xinput.
+      summary: List detected mouse devices
+      description: Returns a list of mouse names available through the host OS input interfaces.
       operationId: getMouseNames
       responses:
         "200":
-          description: Mouse list retrieved successfully
+          description: Mouse names retrieved successfully
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: ok
-                  mouse_names:
-                    type: array
-                    items:
-                      type: string
-                    example: ["Logitech G502", "USB Optical Mouse"]
+                $ref: "#/components/schemas/MouseNamesResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
 
   /mouse/set-name:
     get:
       tags: [Mouse]
-      summary: Select a mouse by name
-      description: >
-        Resolves the xinput ID matching the provided name
-        and sets it as the active mouse.
+      summary: Select the active mouse by name
+      description: Resolves the matching device ID and sets the active mouse input.
       operationId: setMouseName
       parameters:
         - name: mouse-name
           in: query
           required: true
-          description: Mouse name as returned by `/mouse/names`
+          description: Mouse name as returned by /mouse/names.
           schema:
             type: string
             example: "Logitech G502"
@@ -67,116 +189,49 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: ok
-                  mouse_name:
-                    type: string
-                    example: "Logitech G502"
-                  mouse_id:
-                    type: integer
-                    example: 8
+                $ref: "#/components/schemas/MouseSelectionResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
 
   /mouse/speed:
     get:
       tags: [Mouse]
-      summary: Set or toggle mouse speed
-      description: >
-        Two exclusive modes:
-        - **Toggle**: use the `start` parameter (`1` = enable, `0` = disable).
-        - **Speed value**: use the `value` parameter (float between [0,1]). Both parameters must not be combined.
+      summary: Set speed or toggle speed management
+      description: Use either the value parameter for a direct speed value or the start parameter to enable/disable speed processing. These modes are mutually exclusive.
       operationId: setMouseSpeed
       parameters:
         - name: value
           in: query
           required: false
-          description: Float value for the mouse speed
+          description: Direct mouse speed value to apply.
           schema:
             type: number
             format: float
-            example: 0.5
+            example: 1.5
         - name: start
           in: query
           required: false
-          description: "`1` to enable speed management, `0` to disable it"
+          description: 1 enables speed management; 0 disables it.
           schema:
-            type: string
-            enum: ["0", "1"]
-            example: "1"
+            type: integer
+            enum: [0, 1]
+            example: 1
       responses:
         "200":
-          description: Operation completed successfully
+          description: Mouse speed operation completed successfully
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: "#/components/schemas/SpeedStartResponse"
-                  - $ref: "#/components/schemas/SpeedValueResponse"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-
-  /thermal/gui:
-    get:
-      tags: [Thermal]
-      summary: Enable / disable GUI thermal mode
-      description: >
-        When `start=1`, GUI mode is enabled and IDE mode is disabled.
-        When `start=0`, GUI mode is disabled.
-      operationId: setThermalGui
-      parameters:
-        - name: start
-          in: query
-          required: true
-          description: "`1` to enable GUI mode, `0` to disable it"
-          schema:
-            type: string
-            enum: ["0", "1"]
-            example: "1"
-      responses:
-        "200":
-          description: GUI thermal state updated
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ThermalStartResponse"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-
-  /thermal/ide:
-    get:
-      tags: [Thermal]
-      summary: Enable / disable IDE thermal mode
-      description: >
-        When `start=1`, IDE mode is enabled and GUI mode is disabled.
-        When `start=0`, IDE mode is disabled.
-      operationId: setThermalIde
-      parameters:
-        - name: start
-          in: query
-          required: true
-          description: "`1` to enable IDE mode, `0` to disable it"
-          schema:
-            type: string
-            enum: ["0", "1"]
-            example: "1"
-      responses:
-        "200":
-          description: IDE thermal state updated
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ThermalStartResponse"
+                  - $ref: "#/components/schemas/MouseSpeedToggleResponse"
+                  - $ref: "#/components/schemas/MouseSpeedValueResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
 
   /metric/complexity:
     post:
       tags: [Metric]
-      summary: Receive a cyclomatic complexity metric
+      summary: Submit a cyclomatic complexity report
       description: >
         Endpoint called (e.g. from an IDE plugin) to submit the cyclomatic
         complexity of a method.
@@ -213,35 +268,142 @@ paths:
               startLine: 42
       responses:
         "200":
-          description: Metric received, PWM values computed, and thermal state switched to IDE
+          description: Complexity metric accepted and processed
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: ok
-                  received:
-                    $ref: "#/components/schemas/ComplexityPayload"
-              example:
-                status: ok
-                received:
-                  uri: "file:///home/user/project/src/MyClass.java"
-                  className: "MyClass"
-                  methodName: "processData"
-                  signature: "void processData(String input)"
-                  complexity: 7
-                  startLine: 42
+                $ref: "#/components/schemas/ComplexityResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /vibration/on:
+    get:
+      tags: [Vibration]
+      summary: Trigger a single vibration pulse
+      description: Sends a vibration command with a duration and PWM intensity.
+      operationId: vibrationPulse
+      parameters:
+        - name: duration
+          in: query
+          required: true
+          description: Vibration duration in milliseconds or device-specific units used by the serial layer.
+          schema:
+            type: integer
+            example: 150
+        - name: pwm
+          in: query
+          required: true
+          description: PWM intensity for the vibration output. Must be between 0 and 255.
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 255
+            example: 80
+      responses:
+        "200":
+          description: Vibration command sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VibrationResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /vibration/loop:
+    get:
+      tags: [Vibration]
+      summary: Trigger repeated vibration pulses
+      description: Sends a vibration loop with repetition timing parameters.
+      operationId: vibrationLoop
+      parameters:
+        - name: vibration-duration
+          in: query
+          required: true
+          description: Duration of each vibration pulse.
+          schema:
+            type: integer
+            example: 200
+        - name: pwm
+          in: query
+          required: true
+          description: PWM intensity for each pulse. Must be between 0 and 255.
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 255
+            example: 100
+        - name: nb-repetitions
+          in: query
+          required: true
+          description: Number of repetitions in the loop.
+          schema:
+            type: integer
+            example: 3
+        - name: time-between-vibration
+          in: query
+          required: true
+          description: Delay between vibration pulses.
+          schema:
+            type: integer
+            example: 50
+      responses:
+        "200":
+          description: Vibration loop sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VibrationLoopResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
 
 components:
-
   schemas:
-
-    SpeedStartResponse:
+    SerialPortRequest:
       type: object
+      required: [port]
+      properties:
+        port:
+          type: string
+          description: Serial port to connect to.
+          example: "COM5"
+
+    SerialPortResponse:
+      type: object
+      required: [status, port, serial_connected]
+      properties:
+        status:
+          type: string
+          example: ok
+        port:
+          type: string
+          nullable: true
+          example: "COM5"
+        serial_connected:
+          type: boolean
+          example: true
+
+    HeatResponse:
+      type: object
+      required: [status, action, duration, pwm]
+      properties:
+        status:
+          type: string
+          example: ok
+        action:
+          type: string
+          example: heat
+        duration:
+          type: integer
+          example: 200
+        pwm:
+          type: integer
+          minimum: 0
+          maximum: 255
+          example: 120
+
+    StateToggleResponse:
+      type: object
+      required: [status, action, start]
       properties:
         status:
           type: string
@@ -254,8 +416,51 @@ components:
           enum: [0, 1]
           example: 1
 
-    SpeedValueResponse:
+    MouseNamesResponse:
       type: object
+      required: [status, mouse_names]
+      properties:
+        status:
+          type: string
+          example: ok
+        mouse_names:
+          type: array
+          items:
+            type: string
+          example: ["Logitech G502", "USB Optical Mouse"]
+
+    MouseSelectionResponse:
+      type: object
+      required: [status, mouse_name, mouse_id]
+      properties:
+        status:
+          type: string
+          example: ok
+        mouse_name:
+          type: string
+          example: "Logitech G502"
+        mouse_id:
+          type: integer
+          example: 8
+
+    MouseSpeedToggleResponse:
+      type: object
+      required: [status, action, start]
+      properties:
+        status:
+          type: string
+          example: ok
+        action:
+          type: string
+          example: start
+        start:
+          type: integer
+          enum: [0, 1]
+          example: 1
+
+    MouseSpeedValueResponse:
+      type: object
+      required: [status, value]
       properties:
         status:
           type: string
@@ -265,45 +470,25 @@ components:
           format: float
           example: 1.5
 
-    ThermalStartResponse:
-      type: object
-      properties:
-        status:
-          type: string
-          example: ok
-        action:
-          type: string
-          example: start
-        start:
-          type: integer
-          enum: [0, 1]
-          example: 1
-
     ComplexityPayload:
       type: object
-      required:
-        - uri
-        - className
-        - methodName
-        - signature
-        - complexity
-        - startLine
+      required: [uri, className, methodName, signature, complexity, startLine]
       properties:
         uri:
           type: string
-          description: Source file URI
+          description: Source file URI for the method under analysis.
           example: "file:///home/user/project/src/MyClass.java"
         className:
           type: string
-          description: Name of the class containing the method
+          description: Class containing the method.
           example: "MyClass"
         methodName:
           type: string
-          description: Name of the analyzed method
+          description: Name of the analyzed method.
           example: "processData"
         signature:
           type: string
-          description: Full method signature
+          description: Full method signature.
           example: "void processData(String input)"
         complexity:
           type: integer
@@ -314,19 +499,74 @@ components:
           example: 7
         startLine:
           type: integer
-          description: Line number where the method starts
+          description: Start line of the method in the source file.
           example: 42
+
+    ComplexityResponse:
+      type: object
+      required: [status, received]
+      properties:
+        status:
+          type: string
+          example: ok
+        received:
+          $ref: "#/components/schemas/ComplexityPayload"
+
+    VibrationResponse:
+      type: object
+      required: [status, action, duration, pwm]
+      properties:
+        status:
+          type: string
+          example: ok
+        action:
+          type: string
+          example: vibration on
+        duration:
+          type: integer
+          example: 150
+        pwm:
+          type: integer
+          minimum: 0
+          maximum: 255
+          example: 80
+
+    VibrationLoopResponse:
+      type: object
+      required: [status, action, vibration_duration, pwm, nb_repetitions, time_between_vibration]
+      properties:
+        status:
+          type: string
+          example: ok
+        action:
+          type: string
+          example: vibration on
+        vibration_duration:
+          type: integer
+          example: 200
+        pwm:
+          type: integer
+          minimum: 0
+          maximum: 255
+          example: 100
+        nb_repetitions:
+          type: integer
+          example: 3
+        time_between_vibration:
+          type: integer
+          example: 50
 
     ErrorResponse:
       type: object
+      required: [message]
       properties:
         message:
           type: string
-          example: "Missing value"
+          example: Missing value
 
   responses:
     BadRequest:
-      description: Invalid request
+      description: Invalid request or invalid query parameters.
       content:
         application/json:
           schema:
