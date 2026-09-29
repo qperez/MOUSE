@@ -50,6 +50,7 @@ if __name__ == "__main__":
     serial_singleton = SerialSingleton(port=args.serial_port)
 
     from mouse_server_serial_hub.mouse.controllers.erm_controller import vibration_bp
+    from mouse_server_serial_hub.mouse.controllers.thermal_controller import thermal_bp
     from mouse_server_serial_hub.mouse.controllers.mouse_controller import mouse_bp
     from mouse_server_serial_hub.mouse.controllers.serial_controller import serial_bp
     from mouse_server_serial_hub.mouse.controllers.cyclomatic_complexity_controller import cyclomatic_complexity_bp
@@ -66,6 +67,8 @@ if __name__ == "__main__":
     app.register_blueprint(mouse_bp, url_prefix="/mouse")
     app.register_blueprint(cyclomatic_complexity_bp, url_prefix="/metric")
     app.register_blueprint(vibration_bp, url_prefix="/vibration")
+    app.register_blueprint(thermal_bp, url_prefix="/thermal")
+
 
     ms_speed_thread = threading.Thread(target=mouse_speed_thread)
     ms_speed_thread.start()
