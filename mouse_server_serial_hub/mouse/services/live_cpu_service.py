@@ -1,25 +1,23 @@
 from time import sleep
-
+import platform
 import psutil
 
 from mouse_server_serial_hub.mouse.serial_mouse.serial_singleton import SerialSingleton
-#from mouse_server_serial_hub.mouse.shared.shared_thermal_state import SharedThermalState
-from mouse_server_serial_hub.mouse.shared.shared_haptic_service import SharedHapticService
-
-
+from mouse_server_serial_hub.mouse.shared.shared_m5_state import SharedM5State
 
 serial_singleton = SerialSingleton()
-shared_thermal_service = SharedHapticService()
+shared_m5_state = SharedM5State()
 
 
 def hardware_infos_over_serial_thread():
     rapl_energy_start = get_rapl_value()
 
     while True:
-        if shared_thermal_service.get_thermal_state() and serial_singleton is not None:
-                values = build_metrics(rapl_energy_start)
-                serial_singleton.write_message(values)
+        if shared_m5_state.get_m5_gui_mode() == "default" and serial_singleton is not None:
+            values = build_metrics(rapl_energy_start)
+            serial_singleton.write_message(values) # TODO : move haptic logic here from m5 code
         sleep(0.5)
+
 
 def build_metrics(rapl_start):
     cpu = psutil.cpu_percent()
@@ -31,6 +29,10 @@ def build_metrics(rapl_start):
     dict_json_data = {'cpu-load': cpu, 'memory-load': memory, 'cpu-energy': energy}
     return str(dict_json_data)
 
+
 def get_rapl_value():
-    with open("/sys/class/powercap/intel-rapl/intel-rapl:0/energy_uj") as f:
-        return int(f.read())
+    if platform.system() == "Linux":
+        with open("/sys/class/powercap/intel-rapl/intel-rapl:0/energy_uj") as f:
+            return int(f.read())
+    else :
+         return 0 # TODO : windows version

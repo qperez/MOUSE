@@ -13,7 +13,7 @@ uint8_t min_pwm_value = 1;
 uint8_t pwm_value = min_pwm_value;
 uint8_t max_pwm_value = 150;
 
-uint8_t control_mode_pwm = 0;
+uint8_t control_mode_gui = 0;
 
 double cpu_load_percent = 0;
 double memory_load_percent = 0;
@@ -141,7 +141,7 @@ void create_bottom_buttons(void)
     lv_obj_set_size(btn_mode, 100, 35);
 
     lv_obj_t * label_mode = lv_label_create(btn_mode);
-    lv_label_set_text_fmt(label_mode, "Mode: %d", control_mode_pwm);
+    lv_label_set_text_fmt(label_mode, "Mode: %d", control_mode_gui);
     lv_obj_center(label_mode);
 
     btn_minus = lv_button_create(lv_screen_active());
@@ -263,7 +263,7 @@ void setup()
     Serial.begin(115200);
 
     pinMode(PWM_PIN_PAD, OUTPUT);
-    pinMode(5, OUTPUT);
+    pinMode(PWM_PIN_ERM, OUTPUT);
 
     create_top_banner();
     create_ui();
@@ -386,32 +386,32 @@ void exit_mode_cyclo_complexity(void)
 struct Mode {
     void (*on_enter)();
     void (*on_exit)();
-    void (*on_loop)();
+    void (*on_loop)(JsonDocument json_doc);
 };
 
 
-void handle_mode0() {
-    if (Serial.available()){
-        String json_string = Serial.readStringUntil('\n');
-        json_string.trim();
+void handle_cpu_gui(JsonDocument json_doc) {
+    // if (Serial.available()){
+    //     String json_string = Serial.readStringUntil('\n');
+    //     json_string.trim();
 
-        JsonDocument json_doc;
-        deserializeJson(json_doc, json_string);
-        if(json_doc["cpu-load"].is<float>()){
-            cpu_load_percent    = json_doc["cpu-load"].as<float>();
-            memory_load_percent = json_doc["memory-load"].as<double>();
-            energy_cpu_wh       = json_doc["cpu-energy"].as<float>();
+    //     JsonDocument json_doc;
+    //     deserializeJson(json_doc, json_string);
+    if(json_doc["cpu-load"].is<float>()){
+        cpu_load_percent    = json_doc["cpu-load"].as<float>();
+        memory_load_percent = json_doc["memory-load"].as<double>();
+        energy_cpu_wh       = json_doc["cpu-energy"].as<float>();
 
-            pwm_value = log_pwm_cpu_load(max_pwm_value, min_pwm_value, cpu_load_percent);
-            analogWrite(PWM_PIN_PAD, pwm_value);
+        pwm_value = log_pwm_cpu_load(max_pwm_value, min_pwm_value, cpu_load_percent);
+        analogWrite(PWM_PIN_PAD, pwm_value);
 
-            lv_label_set_text_fmt(label_cpu,              "CPU: %d%%", (int)cpu_load_percent);
-            lv_label_set_text_fmt(label_pwm,              "PWM: %d",   pwm_value);
-            //lv_label_set_text_fmt(label_energy_wh_value,  "%.2f Wh",   energy_cpu_wh);
-            lv_label_set_text_fmt(label_energy_wh_value,  "0.09 Wh",   energy_cpu_wh);
-            chart_add_value((uint8_t)cpu_load_percent);
+        lv_label_set_text_fmt(label_cpu,              "CPU: %d%%", (int)cpu_load_percent);
+        lv_label_set_text_fmt(label_pwm,              "PWM: %d",   pwm_value);
+        //lv_label_set_text_fmt(label_energy_wh_value,  "%.2f Wh",   energy_cpu_wh);
+        lv_label_set_text_fmt(label_energy_wh_value,  "0.09 Wh",   energy_cpu_wh);
+        chart_add_value((uint8_t)cpu_load_percent);
         }
-    }
+    // }
 
 
 }
@@ -435,109 +435,143 @@ void enter_mode2() {
     analogWrite(PWM_PIN_PAD, 0);
 }
 
-void handle_mode3() { /* lecture passive, UI déjà en place via on_enter */
-    if(Serial.available())
-    {
-        String json_string = Serial.readStringUntil('\n');
-        json_string.trim(); // supprimer \r éventuels
+void handle_cyclo_gui(JsonDocument json_doc) { /* lecture passive, UI déjà en place via on_enter */
+    // if(Serial.available())
+    // {
+        // String json_string = Serial.readStringUntil('\n');
+        // json_string.trim(); // supprimer \r éventuels
 
-        JsonDocument json_doc;
-        DeserializationError erreur = deserializeJson(json_doc, json_string);
+        // JsonDocument json_doc;
+        // DeserializationError erreur = deserializeJson(json_doc, json_string);
         if(json_doc["class-name"].is<String>()){
             class_name           = json_doc["class-name"].as<String>();
             method_name          = json_doc["method-name"].as<String>();
             cyclomatic_complexity = json_doc["cyclomatic-complexity"].as<int>();
-            pwm_value_thermal = json_doc["pwm-value-thermal"].as<int>();
-            pwm_value_erm = json_doc["pwm-value-erm"].as<int>();
-            pwm_value_nb_pulse_erm = json_doc["pwm-nb-pulse-erm"].as<int>();
+            // pwm_value_thermal = json_doc["pwm-value-thermal"].as<int>();
+            // pwm_value_erm = json_doc["pwm-value-erm"].as<int>();
+            // pwm_value_nb_pulse_erm = json_doc["pwm-nb-pulse-erm"].as<int>();
 
-            Serial.println(pwm_value_erm);
+            // Serial.println(pwm_value_erm);
 
             lv_label_set_text_fmt(label_class,            "Class: %s", class_name.c_str());
             lv_label_set_text_fmt(label_method,           "Method: %s", method_name.c_str());
             lv_label_set_text_fmt(label_cyclo_complexity, "Cyclomatic Complexity:% d", cyclomatic_complexity);
-            startVibration();
-            start_thermal_pad();
+            // startVibration();
+            // start_thermal_pad();
         }
-    }
+    // }
     //analogWrite(PWM_PIN_ERM, pwm_value_erm);
 
 }
 
-void handle_mode4() {
-    if (Serial.available()){
-        String json_string = Serial.readStringUntil('\n');
-        json_string.trim();
+void handle_haptics(JsonDocument json_doc) {
+    // if (Serial.available()){
+    //     String json_string = Serial.readStringUntil('\n');
+    //     json_string.trim();
 
-        JsonDocument json_doc;
-        deserializeJson(json_doc, json_string);
+    //     JsonDocument json_doc;
+    //     deserializeJson(json_doc, json_string);
 
-        Serial.println(json_string);
+    //     Serial.println(json_string);
         
         if(json_doc["pwm_value_erm"].is<int>()){
-            Serial.println("Received pwm_value_erm");
             pwm_value_erm = json_doc["pwm_value_erm"].as<int>();
             pwm_value_nb_pulse_erm = json_doc["pwm_nb_pulse_erm"].as<int>();
             pwm_duration_erm_ms = json_doc["pwm_duration_erm"].as<uint32_t>();
             pwm_pulse_delay_erm_ms = json_doc["pwm_pulse_delay_erm"].as<uint32_t>();
             
-            lv_label_set_text_fmt(label_pwm,              "PWM: %d",   pwm_value_erm);
+            lv_label_set_text_fmt(label_pwm, "PWM: %d",   pwm_value_erm);
             startVibration();
         }
 
         if(json_doc["pwm_value_thermal"].is<int>()){
-            Serial.println("Received pwm_value_thermal");
             pwm_value_thermal = json_doc["pwm_value_thermal"].as<int>();
             pwm_duration_thermal = json_doc["pwm_duration_thermal"].as<int>();
 
             start_thermal_pad();
         }
-    }
+    // }
 }
+
+
 
 /*====================*/
 /*   TABLE DES MODES  */
 /*====================*/
 
-const Mode modes[] = {
-    { nullptr,                      nullptr,                       handle_mode0 }, // read cpu metrics and link to thermal
-    { nullptr,                      nullptr,                       handle_mode1 }, // manual thermal pwm control
-    { enter_mode2,                  nullptr,                       nullptr      }, // stop thermal
-    { enter_mode_cyclo_complexity,  exit_mode_cyclo_complexity,    handle_mode3 }, // read cyclomatic complexity and link to thermal and erm
-    { nullptr,                      nullptr,                       handle_mode4 }, // read pwm values from sharedHapticService
+// const Mode modes[] = {
+//     { nullptr,                      nullptr,                       handle_mode0 }, // read cpu metrics and link to thermal
+//     { nullptr,                      nullptr,                       handle_mode1 }, // manual thermal pwm control
+//     { enter_mode2,                  nullptr,                       nullptr      }, // stop thermal
+//     { enter_mode_cyclo_complexity,  exit_mode_cyclo_complexity,    handle_mode3 }, // read cyclomatic complexity and link to thermal and erm
+//     { nullptr,                      nullptr,                       nullptr }, // read pwm values from sharedHapticService
+// };
+
+
+const Mode GUImodes[] = {
+    { nullptr,                      nullptr,                       handle_cpu_gui },       // default, handles haptics and cpu metrics
+    { enter_mode_cyclo_complexity,  exit_mode_cyclo_complexity,    handle_cyclo_gui }, // read cyclomatic complexity and link to thermal and erm
 };
 
+
 //taille du tableau / taille d'un mode
-constexpr uint8_t MODE_COUNT = sizeof(modes) / sizeof(modes[0]);
+constexpr uint8_t MODE_COUNT = sizeof(GUImodes) / sizeof(GUImodes[0]);
 
 
 void switch_mode(uint8_t next) {
-    if (modes[control_mode_pwm].on_exit)
-        modes[control_mode_pwm].on_exit();
+    if (GUImodes[control_mode_gui].on_exit)
+        GUImodes[control_mode_gui].on_exit();
 
-    control_mode_pwm = next % MODE_COUNT;
+    control_mode_gui = next % MODE_COUNT;
 
-    if (modes[control_mode_pwm].on_enter)
-        modes[control_mode_pwm].on_enter();
+    if (GUImodes[control_mode_gui].on_enter)
+        GUImodes[control_mode_gui].on_enter();
 
     lv_label_set_text_fmt(
         lv_obj_get_child(btn_mode, 0),
         "Mode: %d",
-        control_mode_pwm
+        control_mode_gui
     );
+}
+
+void handle_modes(JsonDocument json_doc) {
+    if(json_doc["mode"].is<String>()){
+        String mode = json_doc["mode"].as<String>();
+        
+        if(mode == "default")
+            switch_mode(0);
+        else if(mode == "cyclo")
+            switch_mode(1);
+    }
 }
 
 void loop() {
     M5.update();
     lv_timer_handler();
 
-    // Dispatcher
-    if (modes[control_mode_pwm].on_loop)
-        modes[control_mode_pwm].on_loop();
+    if (Serial.available()){
+        String json_string = Serial.readStringUntil('\n');
+        json_string.trim();
+
+        JsonDocument json_doc;
+        DeserializationError error = deserializeJson(json_doc, json_string);
+
+        if(error == DeserializationError::Ok){
+
+            handle_modes(json_doc);
+            handle_haptics(json_doc);
+
+            // Dispatcher for GUI modes
+            if (GUImodes[control_mode_gui].on_loop)
+                GUImodes[control_mode_gui].on_loop(json_doc);
+
+        }
+
+    }
 
     if (M5.BtnB.wasPressed() && !buttonBPressed) {
         if (millis() - lastPressTime > debounceDelay) {
-            switch_mode(control_mode_pwm + 1);
+            switch_mode(control_mode_gui + 1);
             buttonBPressed = true;
             lastPressTime  = millis();
         }

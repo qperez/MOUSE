@@ -1,13 +1,40 @@
 from flask import Blueprint, request, abort, jsonify
 
-from mouse_server_serial_hub.mouse.services.cyclomatic_complexity_service import shared_cyclomatic_complexity_object
-from mouse_server_serial_hub.mouse.services.live_cpu_service import shared_thermal_state
 from mouse_server_serial_hub.mouse.shared.shared_cyclomatic_complexity_object import SharedCyclomaticComplexityObject
-from mouse_server_serial_hub.mouse.shared.shared_thermal_state import SharedThermalState
+
+from mouse_server_serial_hub.mouse.shared.shared_haptic_service import SharedHapticService
+from mouse_server_serial_hub.mouse.serial_mouse.serial_singleton import SerialSingleton
+from mouse_server_serial_hub.mouse.shared.shared_m5_state import SharedM5State
 
 cyclomatic_complexity_bp = Blueprint('cyclomatic_complexity', __name__)
 shared_cyclomatic_complexity_object = SharedCyclomaticComplexityObject()
-shared_thermal_state = SharedThermalState()
+
+shared_haptic_service = SharedHapticService()
+shared_m5_state = SharedM5State()
+serial_singleton = SerialSingleton()
+
+
+@cyclomatic_complexity_bp.route("/gui")
+def cyclo_gui():
+    start = request.args.get("start",type=int)
+    try:
+        if start is not None:
+            if start == 1:
+                shared_m5_state.set_m5_gui_mode("cyclo")
+                if serial_singleton is not None:
+                    serial_singleton.write_message({"mode": "cyclo"})
+                return jsonify(status="ok", action="start", start="cyclo")
+            elif start == 0:
+                shared_m5_state.set_m5_gui_mode("default")
+                if serial_singleton is not None:
+                    serial_singleton.write_message({"mode": "default"})
+                return jsonify(status="ok", action="start", start="default")
+            else:
+                abort(400, "Invalid argument, must be 1 or 0")
+    except Exception as e:
+        abort(400, str(e))
+
+
 
 @cyclomatic_complexity_bp.route("/complexity", methods=["POST"])
 def receive_complexity():
@@ -16,9 +43,6 @@ def receive_complexity():
 
         if data is None:
             abort(400, "Invalid JSON body")
-
-        shared_thermal_state.set_thermal_state_gui(False)
-        shared_thermal_state.set_thermal_state_ide(True)
 
         uri         = data.get("uri")
         class_name  = data.get("className")
@@ -33,13 +57,14 @@ def receive_complexity():
         shared_cyclomatic_complexity_object.set_cyclomatic_complexity(complexity)
 
         #    /**
-     # * Return a human-readable risk label based on McCabe's thresholds.
-     # * 1-5:   Simple, low risk
-     # * 6-10:  Moderate complexity
-     # * 11-20: High complexity, consider refactoring
-     # * 20+:   Very high, untestable
-     # */
-
+        # * Return a human-readable risk label based on McCabe's thresholds.
+        # * 1-5:   Simple, low risk
+        # * 6-10:  Moderate complexity
+        # * 11-20: High complexity, consider refactoring
+        # * 20+:   Very high, untestable
+        # */
+        
+        # TODO : tester valeurs et paramètres pour choix modalité (avec fichier de config plugin)
         if complexity <= 5:
             pwm_value_erm = 30
             pwm_nb_pulse_erm = 1
@@ -57,6 +82,7 @@ def receive_complexity():
 
         shared_cyclomatic_complexity_object.set_pwm_value_erm(pwm_value_erm)
         shared_cyclomatic_complexity_object.set_pwm_nb_pulse_erm(pwm_nb_pulse_erm)
+        shared_cyclomatic_complexity_object.set_pwm_value_thermal(pwm_value_thermal)
         print(f"[complexity] {method_name} → {complexity} ) @ line {start_line}")
         print(signature)
         print(uri)
