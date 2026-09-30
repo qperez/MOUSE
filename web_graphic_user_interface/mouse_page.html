@@ -30,7 +30,7 @@ body {
 /* ── HEADER ── */
 .app-header {
   width: 100%;
-  max-width: 700px;
+  max-width: none;
   margin-bottom: 14px;
   text-align: center;
 }
@@ -51,12 +51,12 @@ body {
 /* ── CPU BAR CARD ── */
 .cpu-bar-card {
   width: 100%;
-  max-width: 1020px;
+  max-width: none;
   background: #fff;
   border-radius: 16px;
   box-shadow: 0 2px 12px rgba(0,0,0,.07);
   padding: 10px 18px;
-  margin-bottom: 4px;
+  margin-bottom: 0;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -94,9 +94,38 @@ body {
   display: flex;
   justify-content: flex-end;
   width: 100%;
-  max-width: 1020px;
-  margin-bottom: 8px;
+  max-width: none;
+  margin: 0;
 }
+.mode-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+  margin: 0 0 14px;
+  border-radius: 8px;
+  background: #f0f3f5;
+}
+.mode-tabs button {
+  min-height: 36px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #66737a;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.mode-tabs button[aria-pressed="true"] {
+  background: #fff;
+  color: #263e46;
+  box-shadow: 0 1px 4px rgba(0,0,0,.12);
+}
+.mode-hint { margin: 0 0 12px; color: #7a858b; font-size: 12px; }
+.mouse-factor-status { min-height: 15px; margin: 0 0 10px 113px; color: #8b969c; font-size: 11px; }
+#modality-panel[data-panel-mode="demo"] .modality-actions,
+#modality-panel[data-panel-mode="demo"] .mouse-monitor { display: none; }
 .cpu-toggle-btn {
   display: inline-flex;
   align-items: center;
@@ -119,7 +148,7 @@ body {
   grid-area: diagram;
   position: relative;
   justify-self: center;
-  width: min(1100px, 100%);
+  width: min(1000px, 60%); 
   aspect-ratio: 32 / 23;
   background: #fff;
   border-radius: 20px;
@@ -208,10 +237,10 @@ body {
 /* ── DIAGRAM AND SETTINGS LAYOUT ── */
 .workspace {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 400px;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 400px);
   align-items: start;
   gap: 24px;
-  width: min(1700px, 100%);
+  width: min(1800px, 100%);
 }
 .diagram-column {
   display: flex;
@@ -305,10 +334,49 @@ body {
 /* Control rows */
 .ctrl-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .ctrl-row label { font-size: 13px; color: #666; min-width: 105px; text-align: right; flex-shrink: 0; }
-.ctrl-row input[type=range] { flex: 1; width: auto; accent-color: var(--green); }
-#mouse-section .ctrl-row input[type=range] { accent-color: var(--blue); }
-#vibration-section .ctrl-row input[type=range] { accent-color: var(--green); }
-#thermal-section .ctrl-row input[type=range] { accent-color: var(--red); }
+.ctrl-row input[type=range] {
+  --range-color: var(--green);
+  flex: 1;
+  width: auto;
+  height: 18px;
+  accent-color: var(--range-color);
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+#mouse-section .ctrl-row input[type=range] { --range-color: var(--blue); }
+#vibration-section .ctrl-row input[type=range] { --range-color: var(--green); }
+#thermal-section .ctrl-row input[type=range] { --range-color: var(--red); }
+.ctrl-row input[type=range]::-webkit-slider-runnable-track {
+  height: 5px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--range-color) 28%, #e6e9ed);
+}
+.ctrl-row input[type=range]::-webkit-slider-thumb {
+  width: 16px;
+  height: 16px;
+  margin-top: -5.5px;
+  -webkit-appearance: none;
+  appearance: none;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--range-color);
+  box-shadow: 0 1px 4px rgba(0,0,0,.24);
+}
+.ctrl-row input[type=range]::-moz-range-track {
+  height: 5px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--range-color) 28%, #e6e9ed);
+}
+.ctrl-row input[type=range]::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--range-color);
+  box-shadow: 0 1px 4px rgba(0,0,0,.24);
+}
 .ctrl-row .vv { font-size: 12px; font-weight: 700; color: #333; min-width: 30px; }
 .ctrl-row select {
   flex: 1; font-size: 11.5px;
@@ -453,7 +521,7 @@ body {
 /* ── THREAD CONTROL CARD ── */
 .thread-card {
   width: 100%;
-  max-width: 1020px;
+  max-width: none;
   background: #fff;
   border-radius: 16px;
   box-shadow: 0 2px 12px rgba(0,0,0,.07);
@@ -461,8 +529,17 @@ body {
   display: flex;
   align-items: center;
   gap: 14px;
-  margin-bottom: 10px;
+  margin-bottom: 0;
 }
+.cpu-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: end;
+  gap: 16px;
+  width: 100%;
+  margin-top: 4px;
+}
+.cpu-stack { display: flex; min-width: 0; flex-direction: column; gap: 2px; }
 .thread-card label {
   font-size: 13px;
   font-weight: 700;
@@ -556,23 +633,13 @@ body {
   #zone-status { flex-wrap: wrap; }
 }
 
-@media (min-width: 1500px) {
-  #modality-panel {
-    position: fixed;
-    top: 16px;
-    right: 16px;
-    width: 400px;
-    height: calc(100vh - 32px);
-    z-index: 200;
-  }
-}
-
-@media (min-width: 1770px) {
-  .workspace { grid-template-columns: minmax(0, 1fr); }
-}
-
-@media (min-width: 721px) and (max-height: 1100px) {
-  #venn { width: min(1100px, 100%, max(280px, calc((100vh - 290px) * 1.3913))); }
+@media (max-width: 600px) {
+  .cpu-metrics { grid-template-columns: 1fr; }
+  .thread-card, .cpu-bar-card { padding: 12px; }
+  .ctrl-row { gap: 6px; }
+  .ctrl-row label { min-width: 92px; font-size: 12px; }
+  .mouse-factor-status { margin-left: 98px; }
+  #zone-status { margin-bottom: 12px; }
 }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
@@ -584,29 +651,10 @@ body {
 <main class="diagram-column">
 <div class="app-header">
   <h1>PHASE - Pseudo-Haptic And haptic feedback for Software Energy perception</h1>
-  <p class="subtitle">
+  <!-- <p class="subtitle">
     <strong>CPU load</strong> received in real time via WebSocket &nbsp;·&nbsp;
     <strong>Click + drag</strong> in the diagram → activate modalities
-  </p>
-</div>
-
-<!-- ── THREAD CONTROL ── -->
-<div class="thread-card">
-  <label>Threads</label>
-  <input id="threads" type="range" min="0" max="20" value="0">
-  <span class="thread-count-badge" id="threadCount">0</span>
-</div>
-
-<!-- ── CPU BAR ── -->
-<div class="cpu-toggle-row">
-  <button class="cpu-toggle-btn" onclick="toggleCpuBar()" id="cpu-toggle-btn">
-    <span class="tog-eye" id="cpu-eye">👁</span> CPU bar
-  </button>
-</div>
-<div class="cpu-bar-card" id="cpu-bar-wrap">
-  <span class="cpu-bar-lbl">CPU</span>
-  <div class="cpu-bar-track"><div class="cpu-bar-fill" id="cpu-bar-fill"></div></div>
-  <span class="cpu-bar-pct" id="cpu-bar-pct">0%</span>
+  </p> -->
 </div>
 
 <!-- ── VENN DIAGRAM ── -->
@@ -634,10 +682,30 @@ body {
     <span class="zdot"></span> Vibration
   </span>
 </div>
+
+<div class="cpu-metrics">
+  <div class="thread-card">
+    <label for="threads">Threads</label>
+    <input id="threads" type="range" min="0" max="20" value="0">
+    <span class="thread-count-badge" id="threadCount">0</span>
+  </div>
+  <div class="cpu-stack">
+    <!-- <div class="cpu-toggle-row">
+      <button class="cpu-toggle-btn" onclick="toggleCpuBar()" id="cpu-toggle-btn" aria-label="Toggle CPU bar">
+        <span class="tog-eye" id="cpu-eye">👁</span> CPU bar
+      </button>
+    </div> -->
+    <div class="cpu-bar-card" id="cpu-bar-wrap">
+      <span class="cpu-bar-lbl">CPU</span>
+      <div class="cpu-bar-track"><div class="cpu-bar-fill" id="cpu-bar-fill"></div></div>
+      <span class="cpu-bar-pct" id="cpu-bar-pct">0%</span>
+    </div>
+  </div>
+</div>
 </main>
 
 <!-- ══════════════ PERSISTENT SETTINGS PANEL ══════════════ -->
-<div id="modality-panel" class="side-panel">
+<div id="modality-panel" class="side-panel" data-panel-mode="demo">
   <!-- <div class="panel-header">
     <div class="panel-header-left">
       <div class="panel-icon">M</div>
@@ -665,7 +733,23 @@ body {
         <input id="serial-port" type="text" placeholder="Serial port (e.g. COM5)" autocomplete="off">
         <button type="submit" id="serial-port-btn">Connect</button>
       </form>
+      <div class="sec">Mouse device</div>
+      <div class="mouse-select-wrap">
+        <div class="mouse-select-row">
+          <select id="mouse-device-select" onchange="onMouseDeviceChange(this.value)">
+            <option value="">— Loading… —</option>
+          </select>
+          <button class="mouse-refresh-btn" onclick="loadMouseNames()" title="Refresh mouse devices" aria-label="Refresh mouse devices">↻</button>
+        </div>
+        <div class="mouse-select-status" id="mouse-select-status" role="status" aria-live="polite"></div>
+      </div>
     </section>
+
+    <div class="mode-tabs" role="group" aria-label="Panel mode">
+      <button type="button" id="demo-mode-btn" aria-pressed="true" onclick="setPanelMode('demo')">Demo CPU</button>
+      <button type="button" id="test-mode-btn" aria-pressed="false" onclick="setPanelMode('test')">Test</button>
+    </div>
+    <p class="mode-hint" id="mode-hint">Drag the diagram pointer to select modalities.</p>
 
     <section id="vibration-section" class="modality-section" hidden>
     <div class="sec">Vibration</div>
@@ -723,7 +807,15 @@ body {
       <span class="panel-badge" id="mouse-section-badge">INACTIF</span>
     </div>
 
+    <div class="ctrl-row">
+      <label for="mouse-speed-factor">Speed factor</label>
+      <input type="range" id="mouse-speed-factor" min="0.1" max="1" value="0.73" step="0.01" data-value-output="mouse-speed-factor-v" onchange="setMouseSpeedFactor(this.value)">
+      <span class="vv" id="mouse-speed-factor-v">0.73</span>
+    </div>
+    <div class="mouse-factor-status" id="mouse-factor-status" role="status" aria-live="polite"></div>
+
     <!-- Speed visualisation -->
+    <div class="mouse-monitor">
     <div class="speed-display">
       <div class="speed-big" id="mouse-speed-val">0</div>
       <div class="speed-unit">px / s</div>
@@ -735,17 +827,6 @@ body {
 
     <!-- canvas trace -->
     <canvas id="mouse-canvas"></canvas>
-
-    <!-- Mouse device selector -->
-    <div class="sec">Device</div>
-    <div class="mouse-select-wrap">
-      <div class="mouse-select-row">
-        <select id="mouse-device-select" onchange="onMouseDeviceChange(this.value)">
-          <option value="">— Loading… —</option>
-        </select>
-        <button class="mouse-refresh-btn" onclick="loadMouseNames()" title="Refresh">↻</button>
-      </div>
-      <div class="mouse-select-status" id="mouse-select-status"></div>
     </div>
 
   <div class="modality-actions">
@@ -814,6 +895,7 @@ document.getElementById('serial-config-form').addEventListener('submit', async e
 });
 
 loadSerialPort();
+loadMouseNames();
 
 socket.on('connect', () => {
   console.log('[WS] connected to backend');
@@ -833,6 +915,12 @@ document.querySelectorAll('[data-value-output]').forEach(input => {
   const updateOutput = () => { output.textContent = input.value + (input.dataset.suffix || ''); };
   input.addEventListener('input', updateOutput);
   updateOutput();
+});
+
+document.querySelectorAll('#thermal-section input[type=range]').forEach(input => {
+  input.addEventListener('change', () => {
+    if (panelMode === 'demo' && wasInRightZone) startThermalFeedback();
+  });
 });
 
 function updateCPU(val) {
@@ -886,22 +974,45 @@ pointer.style.top = '50%';
 const diagramSize = { width: 640, height: 460 };
 
 const circles = {
-  left:   { x: 250, y: 210, r: 130, endpoint: '/mouse/speed' },
-  right:  { x: 390, y: 210, r: 130, endpoint: '/thermal/gui'     },
+  left:   { x: 250, y: 210, r: 130 },
+  right:  { x: 390, y: 210, r: 130 },
   bottom: { x: 320, y: 320, r: 130 }
 };
 
 function inCircle(px, py, c) {
   return Math.hypot(px - c.x, py - c.y) <= c.r;
 }
-function sendRest(endpoint, start) {
-  fetch(`http://localhost:5000${endpoint}?start=${start}`, { method: 'GET' })
-    .then(r => r.json())
-    .catch(() => {});
-}
-
 let wasInMouseZone = false;
 let wasInRightZone = false;
+let wasInVibrationZone = false;
+let panelMode = 'demo';
+
+function setPanelMode(mode) {
+  if (mode !== panelMode) {
+    if (panelMode === 'demo' && wasInMouseZone) setMouseFeedbackActive(false);
+    if (panelMode === 'demo' && wasInRightZone) stopThermalFeedback();
+    if (panelMode === 'demo' && wasInVibrationZone) stopVibrationFeedback();
+    if (mouseRunning) stopMouseTracking();
+    wasInMouseZone = false;
+    wasInRightZone = false;
+    wasInVibrationZone = false;
+  }
+  panelMode = mode;
+  document.getElementById('modality-panel').dataset.panelMode = mode;
+  document.getElementById('demo-mode-btn').setAttribute('aria-pressed', String(mode === 'demo'));
+  document.getElementById('test-mode-btn').setAttribute('aria-pressed', String(mode === 'test'));
+  document.getElementById('mode-hint').textContent = mode === 'demo'
+    ? 'Drag the diagram pointer to select modalities.'
+    : 'Adjust a modality, then use its test controls.';
+  updateModalityVisibility();
+}
+
+function updateModalityVisibility() {
+  const showAll = panelMode === 'test';
+  document.getElementById('mouse-section').hidden = !showAll && !wasInMouseZone;
+  document.getElementById('thermal-section').hidden = !showAll && !wasInRightZone;
+  document.getElementById('vibration-section').hidden = !showAll && !wasInVibrationZone;
+}
 
 function evaluateZones(x, y) {
   x *= diagramSize.width / venn.clientWidth;
@@ -909,25 +1020,30 @@ function evaluateZones(x, y) {
   const inVibration = inCircle(x, y, circles.bottom);
   const inMouse = inCircle(x, y, circles.left);
   const inRight = inCircle(x, y, circles.right);
+  const enteredMouse = panelMode === 'demo' && inMouse && !wasInMouseZone;
+  const leftMouse = wasInMouseZone && !(panelMode === 'demo' && inMouse);
+  const enteredThermal = panelMode === 'demo' && inRight && !wasInRightZone;
+  const leftThermal = wasInRightZone && !(panelMode === 'demo' && inRight);
+  const enteredVibration = panelMode === 'demo' && inVibration && !wasInVibrationZone;
+  const leftVibration = wasInVibrationZone && !(panelMode === 'demo' && inVibration);
 
-  // Mouse-speed activation and device discovery
-  if (inMouse && !wasInMouseZone) {
-    sendRest(circles.left.endpoint, 1);
-    if (document.getElementById('mouse-device-select').options[0]?.value === '') loadMouseNames();
-    wasInMouseZone = true;
-  } else if (!inMouse && wasInMouseZone) {
-    if (mouseRunning) stopMouseTracking(false);
-    sendRest(circles.left.endpoint, 0);
-    wasInMouseZone = false;
+  wasInMouseZone = panelMode === 'demo' && inMouse;
+  wasInRightZone = panelMode === 'demo' && inRight;
+  wasInVibrationZone = panelMode === 'demo' && inVibration;
+
+  if (panelMode === 'demo') {
+    if (enteredMouse) {
+      setMouseSpeedFactor(document.getElementById('mouse-speed-factor').value);
+      setMouseFeedbackActive(true);
+      if (document.getElementById('mouse-device-select').options[0]?.value === '') loadMouseNames();
+    }
+    if (leftMouse) setMouseFeedbackActive(false);
+    if (enteredThermal) startThermalFeedback();
+    if (leftThermal) stopThermalFeedback();
+    if (enteredVibration) startVibrationFeedback();
+    if (leftVibration) stopVibrationFeedback();
   }
-
-  // thermals REST only (no panel)
-  if (inRight && !wasInRightZone)       { sendRest(circles.right.endpoint, 1); wasInRightZone = true;  }
-  else if (!inRight && wasInRightZone)  { sendRest(circles.right.endpoint, 0); wasInRightZone = false; }
-
-  document.getElementById('mouse-section').hidden = !inMouse;
-  document.getElementById('thermal-section').hidden = !inRight;
-  document.getElementById('vibration-section').hidden = !inVibration;
+  updateModalityVisibility();
 
   // circle highlight
   document.getElementById('left')  .classList.toggle('active', inMouse);
@@ -1230,9 +1346,53 @@ function barColor(value) {
   return value < 40 ? '#1D9E75' : value < 70 ? '#BA7517' : '#E24B4A';
 }
 
-async function sendVibration() {
-  const button = document.getElementById('btn-vibration-send');
+let thermalFeedbackTimer = null;
+let thermalFeedbackGeneration = 0;
+let vibrationFeedbackTimer = null;
+let vibrationFeedbackGeneration = 0;
 
+function stopThermalFeedback() {
+  thermalFeedbackGeneration++;
+  clearTimeout(thermalFeedbackTimer);
+  thermalFeedbackTimer = null;
+}
+
+function startThermalFeedback() {
+  stopThermalFeedback();
+  runThermalFeedback(thermalFeedbackGeneration);
+}
+
+async function runThermalFeedback(generation) {
+  if (generation !== thermalFeedbackGeneration || panelMode !== 'demo' || !wasInRightZone) return;
+  await sendThermal();
+  if (generation !== thermalFeedbackGeneration || panelMode !== 'demo' || !wasInRightZone) return;
+  const duration = Number(document.getElementById('thermal-duration').value);
+  thermalFeedbackTimer = setTimeout(() => runThermalFeedback(generation), duration);
+}
+
+function stopVibrationFeedback() {
+  vibrationFeedbackGeneration++;
+  clearTimeout(vibrationFeedbackTimer);
+  vibrationFeedbackTimer = null;
+}
+
+function startVibrationFeedback() {
+  stopVibrationFeedback();
+  runVibrationFeedback(vibrationFeedbackGeneration);
+}
+
+async function runVibrationFeedback(generation) {
+  if (generation !== vibrationFeedbackGeneration || panelMode !== 'demo' || !wasInVibrationZone) return;
+  const duration = Number(document.getElementById('vibration-duration').value);
+  const pulses = Number(document.getElementById('vibration-pulses').value);
+  const delay = Number(document.getElementById('vibration-delay').value);
+  await sendVibration();
+  if (generation !== vibrationFeedbackGeneration || panelMode !== 'demo' || !wasInVibrationZone) return;
+  const pulseBatchDuration = pulses * duration + pulses * delay;
+  vibrationFeedbackTimer = setTimeout(() => runVibrationFeedback(generation), pulseBatchDuration);
+}
+
+async function sendVibration() {
   const params = new URLSearchParams({
     pwm: document.getElementById('vibration-intensity').value,
     'vibration-duration': document.getElementById('vibration-duration').value,
@@ -1247,12 +1407,11 @@ async function sendVibration() {
     if (!response.ok || result.status !== 'ok') throw new Error(result.message || 'Vibration request failed');
 
   } catch (error) {
-    print(error)
+    console.error('Vibration request failed:', error);
   } 
 }
 
 async function sendThermal() {
-  const button = document.getElementById('btn-thermal-send');
   const params = new URLSearchParams({
     duration: document.getElementById('thermal-duration').value,
     pwm: document.getElementById('thermal-intensity').value
@@ -1266,8 +1425,41 @@ async function sendThermal() {
     if (!response.ok || result.status !== 'ok') throw new Error(result.message || 'Thermal request failed');
 
   } catch (error) {
-    print(error)
+    console.error('Thermal request failed:', error);
   } 
+}
+
+async function setMouseSpeedFactor(value) {
+  const status = document.getElementById('mouse-factor-status');
+  status.textContent = 'Applying…';
+  try {
+    const response = await fetch(`http://localhost:5000/mouse/speed?value=${encodeURIComponent(value)}`);
+    const result = await response.json();
+    if (!response.ok || result.status !== 'ok') throw new Error(result.message || 'Could not set mouse speed');
+    status.textContent = 'Factor applied';
+  } catch (error) {
+    status.textContent = 'Unable to apply factor';
+  }
+}
+
+function setMouseFeedbackActive(active) {
+  const start = active ? 1 : 0;
+  if (active) {
+    if (mouseFactorInterval === null) {
+      mouseFactorInterval = setInterval(() => {
+        const value = document.getElementById('mouse-speed-factor').value;
+        fetch(`http://localhost:5000/mouse/speed?value=${encodeURIComponent(value)}`)
+          .then(response => response.json())
+          .catch(error => console.error('Mouse factor refresh failed:', error));
+      }, 1000);
+    }
+  } else {
+    clearInterval(mouseFactorInterval);
+    mouseFactorInterval = null;
+  }
+  fetch(`http://localhost:5000/mouse/speed?start=${start}`)
+    .then(response => response.json())
+    .catch(error => console.error('Mouse feedback request failed:', error));
 }
 
 /* ═══════════════════════════════════════
@@ -1275,6 +1467,7 @@ async function sendThermal() {
 ═══════════════════════════════════════ */
 let mouseRunning    = false;
 let mouseTickInt    = null;
+let mouseFactorInterval = null;
 let lastMouseX = null, lastMouseY = null, lastMouseT = null;
 let currentMouseSpeed = 0, targetMouseSpeed = 0;
 let mouseHistory = [];
@@ -1283,6 +1476,7 @@ const mctx = mcvs.getContext('2d');
 
 function startMouseTracking() {
   if (mouseRunning) return;
+  setMouseSpeedFactor(document.getElementById('mouse-speed-factor').value);
   mouseRunning = true;
   mouseHistory = [];
   lastMouseX = null; lastMouseY = null; lastMouseT = null;
@@ -1291,7 +1485,7 @@ function startMouseTracking() {
   const badge = document.getElementById('mouse-section-badge');
   badge.textContent = 'ACTIF'; badge.classList.add('on');
   mouseTickInt = setInterval(mouseMainTick, 80);
-  fetch('http://localhost:5000/mouse/speed?start=1', { method: 'GET' }).then(r => r.json()).catch(() => {});
+  setMouseFeedbackActive(true);
 }
 
 function stopMouseTracking(sendRequest = true) {
@@ -1306,7 +1500,7 @@ function stopMouseTracking(sendRequest = true) {
   updateMouseDisplay(0);
   mctx.clearRect(0,0,mcvs.width,mcvs.height);
   if (sendRequest) {
-    fetch('http://localhost:5000/mouse/speed?start=0', { method: 'GET' }).then(r => r.json()).catch(() => {});
+    setMouseFeedbackActive(false);
   }
 }
 
@@ -1333,7 +1527,7 @@ function mouseMainTick() {
 function updateMouseDisplay(spd) {
   const mx  = 1200;
   const pct = Math.min(100, (spd / mx) * 100);
-  const col = spd < 400 ? '#3B6FD8' : spd < 800 ? '#BA7517' : '#E24B4A';
+  const col = '#3B6FD8';
   document.getElementById('mouse-speed-val').textContent = Math.round(spd);
   document.getElementById('mouse-speed-val').style.color = col;
   document.getElementById('mouse-speed-bar').style.width = pct + '%';
@@ -1357,7 +1551,7 @@ function drawMouseViz(spd) {
   if (mouseHistory.length > W) mouseHistory.shift();
   mctx.fillStyle = '#eff4ff'; mctx.fillRect(0,0,W,H);
 
-  const hue  = norm < .35 ? 218 : norm < .68 ? 35 : 0;
+  const hue  = 218;
   const sat  = 70;
   mctx.beginPath(); mctx.moveTo(0,H);
   for (let i=0;i<mouseHistory.length;i++) mctx.lineTo(i, H-(mouseHistory[i]*(H*0.8)+H*0.08));

@@ -402,11 +402,11 @@ void handle_cpu_gui(JsonDocument json_doc) {
         memory_load_percent = json_doc["memory-load"].as<double>();
         energy_cpu_wh       = json_doc["cpu-energy"].as<float>();
 
-        pwm_value = log_pwm_cpu_load(max_pwm_value, min_pwm_value, cpu_load_percent);
-        analogWrite(PWM_PIN_PAD, pwm_value);
+        // pwm_value = log_pwm_cpu_load(max_pwm_value, min_pwm_value, cpu_load_percent);
+        // analogWrite(PWM_PIN_PAD, pwm_value);
 
         lv_label_set_text_fmt(label_cpu,              "CPU: %d%%", (int)cpu_load_percent);
-        lv_label_set_text_fmt(label_pwm,              "PWM: %d",   pwm_value);
+        // lv_label_set_text_fmt(label_pwm,              "PWM: %d",   pwm_value);
         //lv_label_set_text_fmt(label_energy_wh_value,  "%.2f Wh",   energy_cpu_wh);
         lv_label_set_text_fmt(label_energy_wh_value,  "0.09 Wh",   energy_cpu_wh);
         chart_add_value((uint8_t)cpu_load_percent);

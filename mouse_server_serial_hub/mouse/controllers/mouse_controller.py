@@ -53,8 +53,9 @@ def mouse_speed():
         # Sinon, régler la vitesse via 'value'
         if value is None:
             abort(400, "Missing value")
-        mouse_singleton.set_mouse_speed(float(value))
-        return jsonify(status="ok", value=float(value))
+        speed_factor = float(value)
+        shared_mouse_state.set_mouse_speed_factor(speed_factor)
+        return jsonify(status="ok", value=speed_factor)
 
     except Exception as e:
         abort(400, str(e))

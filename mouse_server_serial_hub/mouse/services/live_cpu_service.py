@@ -13,9 +13,11 @@ def hardware_infos_over_serial_thread():
     rapl_energy_start = get_rapl_value()
 
     while True:
+        # send cpu data to serial for default gui
         if shared_m5_state.get_m5_gui_mode() == "default" and serial_singleton is not None:
             values = build_metrics(rapl_energy_start)
-            serial_singleton.write_message(values) # TODO : move haptic logic here from m5 code
+            serial_singleton.write_message(values)
+
         sleep(0.5)
 
 
