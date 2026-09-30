@@ -17,6 +17,8 @@ serial_singleton = SerialSingleton()
 @cyclomatic_complexity_bp.route("/gui")
 def cyclo_gui():
     start = request.args.get("start",type=int)
+    if start is None:
+        abort(400, "start must be 0 or 1")
     try:
         if start is not None:
             if start == 1:
@@ -76,9 +78,11 @@ def receive_complexity():
         elif 10 < complexity <= 20:
             pwm_value_erm = 70
             pwm_nb_pulse_erm = 3
+            pwm_value_thermal = 0
         else :
             pwm_value_erm = 90
             pwm_nb_pulse_erm = 3
+            pwm_value_thermal = 0
 
         shared_cyclomatic_complexity_object.set_pwm_value_erm(pwm_value_erm)
         shared_cyclomatic_complexity_object.set_pwm_nb_pulse_erm(pwm_nb_pulse_erm)

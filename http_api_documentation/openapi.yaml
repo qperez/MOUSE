@@ -103,56 +103,6 @@ paths:
         "400":
           $ref: "#/components/responses/BadRequest"
 
-  /thermal/gui:
-    get:
-      tags: [Thermal]
-      summary: Enable or disable GUI thermal state
-      description: When start=1, GUI mode is enabled and IDE mode is disabled. When start=0, GUI mode is disabled.
-      operationId: setThermalGui
-      parameters:
-        - name: start
-          in: query
-          required: true
-          description: 1 to enable GUI mode, 0 to disable it.
-          schema:
-            type: integer
-            enum: [0, 1]
-            example: 1
-      responses:
-        "200":
-          description: GUI thermal state updated
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/StateToggleResponse"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-
-  /thermal/ide:
-    get:
-      tags: [Thermal]
-      summary: Enable or disable IDE thermal state
-      description: When start=1, IDE mode is enabled and GUI mode is disabled. When start=0, IDE mode is disabled.
-      operationId: setThermalIde
-      parameters:
-        - name: start
-          in: query
-          required: true
-          description: 1 to enable IDE mode, 0 to disable it.
-          schema:
-            type: integer
-            enum: [0, 1]
-            example: 1
-      responses:
-        "200":
-          description: IDE thermal state updated
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/StateToggleResponse"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-
   /mouse/names:
     get:
       tags: [Mouse]
@@ -228,6 +178,43 @@ paths:
         "400":
           $ref: "#/components/responses/BadRequest"
 
+  /metric/gui:
+    get:
+      tags: [Metric]
+      summary: Select the M5Stack GUI mode for complexity feedback
+      description: Enables cyclomatic-complexity display mode with `start=1` or returns to the default mode with `start=0`.
+      operationId: setComplexityGuiMode
+      parameters:
+        - name: start
+          in: query
+          required: true
+          description: 1 selects complexity mode; 0 selects the default mode.
+          schema:
+            type: integer
+            enum: [0, 1]
+            example: 1
+      responses:
+        "200":
+          description: GUI mode updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, action, start]
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  action:
+                    type: string
+                    example: start
+                  start:
+                    type: string
+                    enum: [cyclo, default]
+                    example: cyclo
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
   /metric/complexity:
     post:
       tags: [Metric]
@@ -235,13 +222,6 @@ paths:
       description: >
         Endpoint called (e.g. from an IDE plugin) to submit the cyclomatic
         complexity of a method.
-
-
-        **Side effects (automatically applied):**
-
-        - GUI thermal mode is **disabled**.
-
-        - IDE thermal mode is **enabled**.
 
 
         **PWM haptic feedback** is derived from McCabe's risk thresholds:
@@ -400,21 +380,6 @@ components:
           minimum: 0
           maximum: 255
           example: 120
-
-    StateToggleResponse:
-      type: object
-      required: [status, action, start]
-      properties:
-        status:
-          type: string
-          example: ok
-        action:
-          type: string
-          example: start
-        start:
-          type: integer
-          enum: [0, 1]
-          example: 1
 
     MouseNamesResponse:
       type: object
