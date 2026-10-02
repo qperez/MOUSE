@@ -122,7 +122,83 @@ body {
   color: #263e46;
   box-shadow: 0 1px 4px rgba(0,0,0,.12);
 }
-.mode-hint { margin: 0 0 12px; color: #7a858b; font-size: 12px; }
+.panel-mode-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+.panel-mode-row > .mode-tabs { flex: 1; min-width: 0; margin: 0; }
+.feedback-switch { display: flex; align-items: center; gap: 6px; flex-shrink: 0; color: #516068; font-size: 12px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+.feedback-switch input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.feedback-switch-track { position: relative; width: 34px; height: 20px; border-radius: 999px; background: #aab5ba; transition: background .15s; }
+.feedback-switch-track::after { position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; content: ''; transition: transform .15s; }
+.feedback-switch input:checked + .feedback-switch-track { background: var(--green); }
+.feedback-switch input:checked + .feedback-switch-track::after { transform: translateX(14px); }
+.feedback-switch input:focus-visible + .feedback-switch-track { outline: 2px solid var(--blue); outline-offset: 2px; }
+.feedback-switch input:disabled + .feedback-switch-track { opacity: .45; }
+.feedback-switch:has(input:disabled) { cursor: default; opacity: .65; }
+.feedback-switch-status { min-width: 18px; color: #65737a; font-size: 11px; }
+.modality-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  list-style: none;
+  color: #37474f;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.modality-summary::-webkit-details-marker { display: none; }
+.modality-summary::after { content: '+'; margin-left: auto; color: var(--modality-color, #77858a); font-size: 18px; font-weight: 500; }
+.modality-section[open] > .modality-summary::after { content: '\2212'; }
+#mouse-section { --modality-color: var(--blue); }
+#thermal-section { --modality-color: var(--red); }
+#vibration-section { --modality-color: var(--green); }
+#mouse-section > .modality-summary,
+#thermal-section > .modality-summary,
+#vibration-section > .modality-summary { color: var(--modality-color); }
+.modality-body { padding-top: 6px; }
+.mapping-mode-tabs { margin: 8px 0; }
+.mapping-mode-tabs button { min-height: 30px; font-size: 12px; }
+.vibration-parameters { margin: 4px 0 12px; }
+.vibration-parameter { padding: 6px 0; }
+.vibration-parameter-head { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.vibration-parameter-name { color: #344d55; font-size: 13px; font-weight: 700; }
+.vibration-parameter-value { margin-left: auto; color: #6b777d; font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.vibration-mode-tabs { display: flex; grid-template-columns: none; gap: 2px; width: auto; padding: 2px; margin: 0; border-radius: 6px; }
+.vibration-mode-tabs button { min-height: 24px; padding: 0 7px; font-size: 11px; }
+.mapping-select-row { margin: 8px 0; }
+.mapping-select-row select { width: 100%; padding: 6px 8px; border: 1px solid #d9e1e6; border-radius: 6px; background: #fff; color: #263e46; font: inherit; font-size: 12px; }
+.mapping-chart-wrap { margin: 8px 0; }
+.mapping-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid #e8ecf2;
+  border-radius: 6px;
+  background: #fafbfc;
+  touch-action: none;
+  cursor: crosshair;
+}
+.mapping-chart:focus-visible { outline: 2px solid var(--modality-color, var(--blue)); outline-offset: 2px; }
+.curve-grid { stroke: #e7ecee; stroke-width: 1; }
+.curve-axis { stroke: #9aa8ad; stroke-width: 1; }
+.curve-line { fill: none; stroke: var(--modality-color, #d34a47); stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
+.curve-cpu-marker { stroke: #ba7517; stroke-width: 1.5; stroke-dasharray: 4 3; }
+.curve-label { fill: #77858a; font: 10px 'Segoe UI', Arial, sans-serif; }
+.curve-point { fill: #fff; stroke: var(--modality-color, #d34a47); stroke-width: 2.5; cursor: grab; }
+.curve-point.selected { fill: var(--modality-color, #d34a47); stroke: #fff; stroke-width: 2.5; }
+.curve-point:focus { outline: none; stroke: #263e46; stroke-width: 3; }
+.mapping-point-toolbar { display: flex; gap: 6px; justify-content: flex-end; margin-top: 6px; }
+.mapping-point-toolbar button {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #d9e1e6;
+  border-radius: 6px;
+  background: #fff;
+  color: #344d55;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 700;
+}
+.mapping-point-toolbar button:disabled { opacity: .4; cursor: default; }
 .mouse-factor-status { min-height: 15px; margin: 0 0 10px 113px; color: #8b969c; font-size: 11px; }
 #modality-panel[data-panel-mode="demo"] .modality-actions,
 #modality-panel[data-panel-mode="demo"] .mouse-monitor { display: none; }
@@ -333,6 +409,7 @@ body {
 
 /* Control rows */
 .ctrl-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.ctrl-row[hidden] { display: none; }
 .ctrl-row label { font-size: 13px; color: #666; min-width: 105px; text-align: right; flex-shrink: 0; }
 .ctrl-row input[type=range] {
   --range-color: var(--green);
@@ -745,53 +822,140 @@ body {
       </div>
     </section>
 
-    <div class="mode-tabs" role="group" aria-label="Panel mode">
-      <button type="button" id="demo-mode-btn" aria-pressed="true" onclick="setPanelMode('demo')">Demo CPU</button>
-      <button type="button" id="test-mode-btn" aria-pressed="false" onclick="setPanelMode('test')">Test</button>
+    <div class="panel-mode-row">
+      <div class="mode-tabs" role="group" aria-label="Panel mode">
+        <button type="button" id="demo-mode-btn" aria-pressed="true" onclick="setPanelMode('demo')">Demo CPU</button>
+        <button type="button" id="test-mode-btn" aria-pressed="false" onclick="setPanelMode('test')">Test</button>
+      </div>
+      <label class="feedback-switch">
+        <span>Demo feedback</span>
+        <input type="checkbox" id="feedback-enabled" checked aria-label="Enable Demo CPU feedback">
+        <span class="feedback-switch-track" aria-hidden="true"></span>
+        <span class="feedback-switch-status" id="feedback-switch-status">On</span>
+      </label>
     </div>
-    <p class="mode-hint" id="mode-hint">Drag the diagram pointer to select modalities.</p>
-
-    <section id="vibration-section" class="modality-section" hidden>
-    <div class="sec">Vibration</div>
-    <!-- <div class="vibration-status" id="vibration-status" role="status" aria-live="polite">Set the pulse pattern, then send it to the ERM motor.</div>
-    <div class="sec">Pulse pattern</div> -->
-    <div class="ctrl-row">
-      <label for="vibration-intensity">PWM value</label>
-      <input type="range" id="vibration-intensity" min="0" max="255" value="153" step="1" data-value-output="vibration-intensity-v">
-      <span class="vv" id="vibration-intensity-v">153</span>
-    </div>
-    <div class="ctrl-row">
-      <label for="vibration-duration">Duration</label>
-      <input type="range" id="vibration-duration" min="10" max="1000" value="150" step="10" data-value-output="vibration-duration-v" data-suffix=" ms">
-      <span class="vv" id="vibration-duration-v">150 ms</span>
-    </div>
-    <div class="ctrl-row">
-      <label for="vibration-pulses">Number of pulses</label>
-      <input type="range" id="vibration-pulses" min="1" max="10" value="3" step="1" data-value-output="vibration-pulses-v">
-      <span class="vv" id="vibration-pulses-v">3</span>
-    </div>
-    <div class="ctrl-row">
-      <label for="vibration-delay">Delay</label>
-      <input type="range" id="vibration-delay" min="0" max="2000" value="250" step="10" data-value-output="vibration-delay-v" data-suffix=" ms">
-      <span class="vv" id="vibration-delay-v">250 ms</span>
-    </div>
+    <details id="vibration-section" class="modality-section" hidden>
+    <summary class="modality-summary">Vibration</summary>
+    <div class="modality-body">
+      <div class="vibration-parameters">
+        <section class="vibration-parameter">
+          <div class="vibration-parameter-head">
+            <span class="vibration-parameter-name">PWM</span>
+            <div class="mode-tabs vibration-mode-tabs" role="group" aria-label="Vibration PWM mapping mode">
+              <button type="button" data-mapping-mode="constant" aria-pressed="false">Constant</button>
+              <button type="button" data-mapping-mode="curve" aria-pressed="true">Curve</button>
+            </div>
+            <output class="vibration-parameter-value" data-mapping-value="vibration-pwm" aria-live="polite"></output>
+          </div>
+          <div class="curve-editor" data-mapping-editor="vibration-pwm">
+            <div class="ctrl-row" data-constant-control="vibration-pwm" hidden>
+              <input type="range" id="vibration-intensity" min="0" max="255" value="153" step="1" aria-label="Constant vibration PWM" data-value-output="vibration-intensity-v">
+              <span class="vv" id="vibration-intensity-v">153</span>
+            </div>
+            <div class="mapping-chart-wrap">
+              <svg class="mapping-chart" data-mapping-chart viewBox="0 0 420 170" role="group" aria-label="Vibration PWM by CPU. Select a point to edit; use arrow keys to adjust it."></svg>
+              <div class="mapping-point-toolbar">
+                <button type="button" data-add-point title="Add curve point" aria-label="Add curve point">+</button>
+                <button type="button" data-remove-point title="Remove selected curve point" aria-label="Remove selected curve point">−</button>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="vibration-parameter">
+          <div class="vibration-parameter-head">
+            <span class="vibration-parameter-name">Duration</span>
+            <div class="mode-tabs vibration-mode-tabs" role="group" aria-label="Vibration duration mapping mode">
+              <button type="button" data-mapping-mode="constant" aria-pressed="false">Constant</button>
+              <button type="button" data-mapping-mode="curve" aria-pressed="true">Curve</button>
+            </div>
+            <output class="vibration-parameter-value" data-mapping-value="vibration-duration" aria-live="polite"></output>
+          </div>
+          <div class="curve-editor" data-mapping-editor="vibration-duration">
+            <div class="ctrl-row" data-constant-control="vibration-duration" hidden>
+              <input type="range" id="vibration-duration" min="10" max="1000" value="150" step="10" aria-label="Constant vibration duration" data-value-output="vibration-duration-v">
+              <span class="vv" id="vibration-duration-v">150</span>
+            </div>
+            <div class="mapping-chart-wrap">
+              <svg class="mapping-chart" data-mapping-chart viewBox="0 0 420 170" role="group" aria-label="Vibration duration by CPU. Select a point to edit; use arrow keys to adjust it."></svg>
+              <div class="mapping-point-toolbar">
+                <button type="button" data-add-point title="Add curve point" aria-label="Add curve point">+</button>
+                <button type="button" data-remove-point title="Remove selected curve point" aria-label="Remove selected curve point">−</button>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="vibration-parameter">
+          <div class="vibration-parameter-head">
+            <span class="vibration-parameter-name">Pulses</span>
+            <div class="mode-tabs vibration-mode-tabs" role="group" aria-label="Vibration pulse count mapping mode">
+              <button type="button" data-mapping-mode="constant" aria-pressed="false">Constant</button>
+              <button type="button" data-mapping-mode="curve" aria-pressed="true">Curve</button>
+            </div>
+            <output class="vibration-parameter-value" data-mapping-value="vibration-pulses" aria-live="polite"></output>
+          </div>
+          <div class="curve-editor" data-mapping-editor="vibration-pulses">
+            <div class="ctrl-row" data-constant-control="vibration-pulses" hidden>
+              <input type="range" id="vibration-pulses" min="1" max="10" value="3" step="1" aria-label="Constant vibration pulse count" data-value-output="vibration-pulses-v">
+              <span class="vv" id="vibration-pulses-v">3</span>
+            </div>
+            <div class="mapping-chart-wrap">
+              <svg class="mapping-chart" data-mapping-chart viewBox="0 0 420 170" role="group" aria-label="Vibration pulse count by CPU. Select a point to edit; use arrow keys to adjust it."></svg>
+              <div class="mapping-point-toolbar">
+                <button type="button" data-add-point title="Add curve point" aria-label="Add curve point">+</button>
+                <button type="button" data-remove-point title="Remove selected curve point" aria-label="Remove selected curve point">−</button>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="vibration-parameter">
+          <div class="vibration-parameter-head">
+            <span class="vibration-parameter-name">Delay</span>
+            <div class="mode-tabs vibration-mode-tabs" role="group" aria-label="Vibration delay mapping mode">
+              <button type="button" data-mapping-mode="constant" aria-pressed="false">Constant</button>
+              <button type="button" data-mapping-mode="curve" aria-pressed="true">Curve</button>
+            </div>
+            <output class="vibration-parameter-value" data-mapping-value="vibration-delay" aria-live="polite"></output>
+          </div>
+          <div class="curve-editor" data-mapping-editor="vibration-delay">
+            <div class="ctrl-row" data-constant-control="vibration-delay" hidden>
+              <input type="range" id="vibration-delay" min="0" max="2000" value="250" step="10" aria-label="Constant vibration delay" data-value-output="vibration-delay-v">
+              <span class="vv" id="vibration-delay-v">250</span>
+            </div>
+            <div class="mapping-chart-wrap">
+              <svg class="mapping-chart" data-mapping-chart viewBox="0 0 420 170" role="group" aria-label="Vibration delay by CPU. Select a point to edit; use arrow keys to adjust it."></svg>
+              <div class="mapping-point-toolbar">
+                <button type="button" data-add-point title="Add curve point" aria-label="Add curve point">+</button>
+                <button type="button" data-remove-point title="Remove selected curve point" aria-label="Remove selected curve point">−</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
     <div class="modality-actions">
       <button class="pf-btn start" id="btn-vibration-send" onclick="sendVibration()">Send vibration</button>
     </div>
-    </section>
+    </div>
+    </details>
 
-    <section id="thermal-section" class="modality-section" hidden>
-      <div class="section-heading">
-        <h2>Thermals</h2>
-        <!-- <span class="panel-badge" id="thermal-panel-badge">READY</span> -->
+    <details id="thermal-section" class="modality-section" hidden>
+      <summary class="modality-summary">Thermals</summary>
+      <div class="modality-body">
+      <div class="curve-editor" data-mapping-editor="thermal-pwm">
+        <div class="mapping-chart-wrap">
+          <svg class="mapping-chart" data-mapping-chart viewBox="0 0 420 170" role="group" aria-label="CPU output curve. Select a point to edit; use arrow keys to adjust it."></svg>
+          <div class="mapping-point-toolbar">
+            <button type="button" data-add-point title="Add curve point" aria-label="Add curve point">+</button>
+            <button type="button" data-remove-point title="Remove selected curve point" aria-label="Remove selected curve point">−</button>
+          </div>
+        </div>
       </div>
       <!-- <div class="vibration-status" id="thermal-status" role="status" aria-live="polite">Set the heat level and duration, then send it to the pad.</div> -->
-      <div class="ctrl-row">
-        <label for="thermal-intensity">PWM value</label>
+      <div class="ctrl-row" data-constant-control="thermal-pwm" hidden>
+        <label for="thermal-intensity">PWM</label>
         <input type="range" id="thermal-intensity" min="0" max="255" value="77" step="1" data-value-output="thermal-intensity-v">
         <span class="vv" id="thermal-intensity-v">77</span>
       </div>
-      <div class="ctrl-row">
+      <div class="ctrl-row" data-test-only>
         <label for="thermal-duration">Duration</label>
         <input type="range" id="thermal-duration" min="100" max="5000" value="1000" step="100" data-value-output="thermal-duration-v" data-suffix=" ms">
         <span class="vv" id="thermal-duration-v">1000 ms</span>
@@ -799,17 +963,28 @@ body {
       <div class="modality-actions">
         <button class="pf-btn start-red" id="btn-thermal-send" onclick="sendThermal()">Send heat</button>
       </div>
-    </section>
+      </div>
+    </details>
 
-<section id="mouse-section" class="modality-section" hidden>
-    <div class="section-heading">
-      <h2>Mouse Speed</h2>
+<details id="mouse-section" class="modality-section" hidden>
+    <summary class="modality-summary">
+      <span>Mouse Speed</span>
       <span class="panel-badge" id="mouse-section-badge">INACTIF</span>
-    </div>
+    </summary>
+    <div class="modality-body">
 
-    <div class="ctrl-row">
+      <div class="curve-editor" data-mapping-editor="mouse-factor">
+        <div class="mapping-chart-wrap">
+          <svg class="mapping-chart" data-mapping-chart viewBox="0 0 420 170" role="group" aria-label="CPU output curve. Select a point to edit; use arrow keys to adjust it."></svg>
+          <div class="mapping-point-toolbar">
+            <button type="button" data-add-point title="Add curve point" aria-label="Add curve point">+</button>
+            <button type="button" data-remove-point title="Remove selected curve point" aria-label="Remove selected curve point">−</button>
+          </div>
+        </div>
+      </div>
+    <div class="ctrl-row" data-constant-control="mouse-factor" hidden>
       <label for="mouse-speed-factor">Speed factor</label>
-      <input type="range" id="mouse-speed-factor" min="0.1" max="1" value="0.73" step="0.01" data-value-output="mouse-speed-factor-v" onchange="setMouseSpeedFactor(this.value)">
+      <input type="range" id="mouse-speed-factor" min="0.1" max="1" value="0.73" step="0.01" data-value-output="mouse-speed-factor-v">
       <span class="vv" id="mouse-speed-factor-v">0.73</span>
     </div>
     <div class="mouse-factor-status" id="mouse-factor-status" role="status" aria-live="polite"></div>
@@ -833,7 +1008,8 @@ body {
     <button class="pf-btn start-blue" id="btn-mouse-start" onclick="startMouseTracking()">▶ Start</button>
     <button class="pf-btn stop"       id="btn-mouse-stop"  onclick="stopMouseTracking()" disabled>■ Stop</button>
   </div>
-</section>
+</div>
+</details>
 </div>
 </div>
 </div>
@@ -929,6 +1105,7 @@ function updateCPU(val) {
   document.getElementById('cpu-bar-fill').style.width  = cpu + '%';
   document.getElementById('cpu-bar-fill').style.background = col;
   document.getElementById('cpu-bar-pct').textContent   = Math.round(cpu) + '%';
+  refreshMappingPreview();
 }
 
 /* ═══════════════════════════════════════
@@ -969,7 +1146,7 @@ const pointer = document.getElementById('pointer');
 let dragging  = false;
 
 pointer.style.left = '50%';
-pointer.style.top = '50%';
+pointer.style.top = '5%';
 
 const diagramSize = { width: 640, height: 460 };
 
@@ -982,10 +1159,21 @@ const circles = {
 function inCircle(px, py, c) {
   return Math.hypot(px - c.x, py - c.y) <= c.r;
 }
+
+function getPointerCoordinates() {
+  const vennRect = venn.getBoundingClientRect();
+  const pointerRect = pointer.getBoundingClientRect();
+  return {
+    x: pointerRect.left + pointerRect.width / 2 - vennRect.left,
+    y: pointerRect.top + pointerRect.height / 2 - vennRect.top
+  };
+}
+
 let wasInMouseZone = false;
 let wasInRightZone = false;
 let wasInVibrationZone = false;
 let panelMode = 'demo';
+let feedbackEnabled = true;
 
 function setPanelMode(mode) {
   if (mode !== panelMode) {
@@ -998,14 +1186,50 @@ function setPanelMode(mode) {
     wasInVibrationZone = false;
   }
   panelMode = mode;
+  document.getElementById('feedback-enabled').disabled = mode === 'test';
   document.getElementById('modality-panel').dataset.panelMode = mode;
   document.getElementById('demo-mode-btn').setAttribute('aria-pressed', String(mode === 'demo'));
   document.getElementById('test-mode-btn').setAttribute('aria-pressed', String(mode === 'test'));
-  document.getElementById('mode-hint').textContent = mode === 'demo'
-    ? 'Drag the diagram pointer to select modalities.'
-    : 'Adjust a modality, then use its test controls.';
-  updateModalityVisibility();
+  if (mode === 'demo' && !feedbackEnabled) {
+    setMouseSpeedFactor(1);
+    setMouseFeedbackActive(false);
+    sendThermal(0);
+  }
+  const pointerPosition = getPointerCoordinates();
+  evaluateZones(pointerPosition.x, pointerPosition.y);
+  renderMappingEditor();
 }
+
+function setFeedbackEnabled(enabled) {
+  if (panelMode === 'test') return;
+  const nextState = Boolean(enabled);
+  if (nextState === feedbackEnabled) return;
+  feedbackEnabled = nextState;
+  document.getElementById('feedback-enabled').checked = feedbackEnabled;
+  document.getElementById('feedback-switch-status').textContent = feedbackEnabled ? 'On' : 'Off';
+
+  if (!feedbackEnabled) {
+    stopThermalFeedback();
+    stopVibrationFeedback();
+    if (mouseRunning) stopMouseTracking(false);
+    setMouseSpeedFactor(1);
+    setMouseFeedbackActive(false);
+    sendThermal(0);
+    return;
+  }
+
+  if (panelMode !== 'demo') return;
+  if (wasInMouseZone) {
+    setMouseSpeedFactor(getOutputValue('mouse-factor'));
+    setMouseFeedbackActive(true);
+  }
+  if (wasInRightZone) startThermalFeedback();
+  if (wasInVibrationZone) startVibrationFeedback();
+}
+
+document.getElementById('feedback-enabled').addEventListener('change', event => {
+  setFeedbackEnabled(event.currentTarget.checked);
+});
 
 function updateModalityVisibility() {
   const showAll = panelMode === 'test';
@@ -1032,12 +1256,12 @@ function evaluateZones(x, y) {
   wasInVibrationZone = panelMode === 'demo' && inVibration;
 
   if (panelMode === 'demo') {
-    if (enteredMouse) {
-      setMouseSpeedFactor(document.getElementById('mouse-speed-factor').value);
+    if (enteredMouse && feedbackEnabled) {
+      setMouseSpeedFactor(getOutputValue('mouse-factor'));
       setMouseFeedbackActive(true);
       if (document.getElementById('mouse-device-select').options[0]?.value === '') loadMouseNames();
     }
-    if (leftMouse) setMouseFeedbackActive(false);
+    if (leftMouse && feedbackEnabled) setMouseFeedbackActive(false);
     if (enteredThermal) startThermalFeedback();
     if (leftThermal) stopThermalFeedback();
     if (enteredVibration) startVibrationFeedback();
@@ -1055,6 +1279,8 @@ function evaluateZones(x, y) {
   document.getElementById('pill-thermals').classList.toggle('on', inRight);
   document.getElementById('pill-vibration').classList.toggle('on', inVibration);
 }
+
+evaluateZones(venn.clientWidth / 2, venn.clientHeight * 0.05);
 
 function movePointer(event) {
   const rect = venn.getBoundingClientRect();
@@ -1346,8 +1572,340 @@ function barColor(value) {
   return value < 40 ? '#1D9E75' : value < 70 ? '#BA7517' : '#E24B4A';
 }
 
+const mappingStorageKey = 'phase-cpu-mappings-v1';
+const mappingSpecs = {
+  'thermal-pwm': { label: 'Thermal PWM', unit: 'PWM', min: 0, max: 255, step: 1, precision: 0, input: 'thermal-intensity', curve: [{ x: 0, y: 0 }, { x: 100, y: 77 }] },
+  'mouse-factor': { label: 'Mouse speed factor', unit: 'factor', min: 0.1, max: 1, step: 0.01, precision: 2, input: 'mouse-speed-factor', curve: [{ x: 0, y: 1 }, { x: 100, y: 0.73 }] },
+  'vibration-pwm': { label: 'Vibration PWM', unit: 'PWM', min: 0, max: 255, step: 1, precision: 0, input: 'vibration-intensity', curve: [{ x: 0, y: 0 }, { x: 100, y: 153 }] },
+  'vibration-duration': { label: 'Vibration duration', unit: 'ms', min: 10, max: 1000, step: 10, precision: 0, input: 'vibration-duration', curve: [{ x: 0, y: 10 }, { x: 100, y: 150 }] },
+  'vibration-pulses': { label: 'Vibration pulses', unit: 'pulses', min: 1, max: 10, step: 1, precision: 0, input: 'vibration-pulses', curve: [{ x: 0, y: 1 }, { x: 100, y: 3 }] },
+  'vibration-delay': { label: 'Vibration delay', unit: 'ms', min: 0, max: 2000, step: 10, precision: 0, input: 'vibration-delay', curve: [{ x: 0, y: 250 }, { x: 100, y: 100 }] }
+};
+
+function clampMappingValue(mappingId, value) {
+  const spec = mappingSpecs[mappingId];
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return spec.min;
+  const rounded = Math.round(numeric / spec.step) * spec.step;
+  return Number(clamp(rounded, spec.min, spec.max).toFixed(spec.precision));
+}
+
+function evaluateCpuCurve(points, input) {
+  const value = clamp(Number(input), 0, 100);
+  for (let index = 1; index < points.length; index++) {
+    const right = points[index];
+    if (value <= right.x) {
+      const left = points[index - 1];
+      const ratio = (value - left.x) / (right.x - left.x);
+      return left.y + (right.y - left.y) * ratio;
+    }
+  }
+  return points[points.length - 1].y;
+}
+
+function createDefaultMappings() {
+  return Object.fromEntries(Object.entries(mappingSpecs).map(([mappingId, spec]) => [mappingId, {
+    mode: 'curve',
+    constant: Number(document.getElementById(spec.input)?.value ?? spec.curve[0].y),
+    points: spec.curve.map(point => ({ ...point }))
+  }]));
+}
+
+function loadCpuMappings() {
+  const defaults = createDefaultMappings();
+  try {
+    const saved = JSON.parse(localStorage.getItem(mappingStorageKey) || 'null');
+    if (!saved || typeof saved !== 'object') return defaults;
+    for (const [mappingId, spec] of Object.entries(mappingSpecs)) {
+      const value = saved[mappingId];
+      if (!value || typeof value !== 'object') continue;
+      defaults[mappingId].mode = value.mode === 'constant' ? 'constant' : 'curve';
+      defaults[mappingId].constant = Number.isFinite(Number(value.constant))
+        ? clampMappingValue(mappingId, value.constant)
+        : defaults[mappingId].constant;
+      if (!Array.isArray(value.points)) continue;
+      const points = value.points
+        .filter(point => Number.isFinite(Number(point?.x)) && Number.isFinite(Number(point?.y)))
+        .map(point => ({ x: clamp(Number(point.x), 0, 100), y: clampMappingValue(mappingId, point.y) }))
+        .sort((left, right) => left.x - right.x);
+      const firstEndpoint = points.find(point => point.x === 0);
+      const lastEndpoint = [...points].reverse().find(point => point.x === 100);
+      const interior = points.filter(point => point.x > 0 && point.x < 100)
+        .filter((point, index, list) => index === 0 || point.x > list[index - 1].x);
+      defaults[mappingId].points = [
+        { x: 0, y: firstEndpoint?.y ?? spec.curve[0].y },
+        ...interior,
+        { x: 100, y: lastEndpoint?.y ?? spec.curve[spec.curve.length - 1].y }
+      ];
+    }
+  } catch (error) {
+    console.warn('Could not load CPU mappings; using defaults.', error);
+  }
+  return defaults;
+}
+
+let cpuMappings = loadCpuMappings();
+
+function saveCpuMappings() {
+  try {
+    localStorage.setItem(mappingStorageKey, JSON.stringify(cpuMappings));
+  } catch (error) {
+    console.warn('Could not save CPU mappings.', error);
+  }
+}
+
+function getMappingOutput(mappingId) {
+  const mapping = cpuMappings[mappingId];
+  const value = mappingId.startsWith('vibration-') && mapping.mode === 'constant'
+    ? mapping.constant
+    : evaluateCpuCurve(mapping.points, cpu);
+  return clampMappingValue(mappingId, value);
+}
+
+function updateMappingValueLabel(mappingId) {
+  const output = document.querySelector(`[data-mapping-value="${mappingId}"]`);
+  if (!output) return;
+  const spec = mappingSpecs[mappingId];
+  const value = getMappingOutput(mappingId);
+  output.textContent = value.toFixed(spec.precision);
+}
+
+function getOutputValue(mappingId) {
+  if (panelMode === 'test') return clampMappingValue(mappingId, cpuMappings[mappingId].constant);
+  return getMappingOutput(mappingId);
+}
+
+const selectedMappingPoints = Object.fromEntries(Object.keys(mappingSpecs).map(mappingId => [mappingId, 0]));
+let mappingDrag = null;
+const mappingPlot = { left: 44, right: 402, top: 14, bottom: 134 };
+
+function getMappingEditorRoot(mappingId) {
+  return document.querySelector(`[data-mapping-editor="${mappingId}"]`);
+}
+
+function getEditorMappingId(root) {
+  return root.dataset.mappingEditor;
+}
+
+function getMappingPointFromEvent(event, chart) {
+  const point = chart.createSVGPoint();
+  point.x = event.clientX;
+  point.y = event.clientY;
+  return point.matrixTransform(chart.getScreenCTM().inverse());
+}
+
+function updateMappingPointFromEvent(mappingId, index, event, chart) {
+  const spec = mappingSpecs[mappingId];
+  const points = cpuMappings[mappingId].points;
+  const point = points[index];
+  const position = getMappingPointFromEvent(event, chart);
+  let cpuValue = clamp((position.x - mappingPlot.left) * 100 / (mappingPlot.right - mappingPlot.left), 0, 100);
+  const outputValue = spec.max - (position.y - mappingPlot.top) * (spec.max - spec.min) / (mappingPlot.bottom - mappingPlot.top);
+  if (index === 0) cpuValue = 0;
+  else if (index === points.length - 1) cpuValue = 100;
+  else cpuValue = clamp(cpuValue, points[index - 1].x + 1, points[index + 1].x - 1);
+  point.x = index === 0 ? 0 : index === points.length - 1 ? 100 : Math.round(cpuValue);
+  point.y = clampMappingValue(mappingId, outputValue);
+  saveCpuMappings();
+  renderMappingEditor(mappingId);
+}
+
+function renderMappingEditor(mappingId) {
+  const roots = mappingId ? [getMappingEditorRoot(mappingId)] : [...document.querySelectorAll('[data-mapping-editor]')];
+  for (const root of roots) {
+    if (!root) continue;
+    const currentId = mappingId || getEditorMappingId(root);
+    const spec = mappingSpecs[currentId];
+    const mapping = cpuMappings[currentId];
+    const mode = currentId.startsWith('vibration-') ? mapping.mode : 'curve';
+    const editorContainer = root.closest('.vibration-parameter') || root;
+    const chart = root.querySelector('[data-mapping-chart]');
+    const selectedPointIndex = selectedMappingPoints[currentId];
+    const toX = value => mappingPlot.left + value * (mappingPlot.right - mappingPlot.left) / 100;
+    const toY = value => mappingPlot.bottom - (value - spec.min) * (mappingPlot.bottom - mappingPlot.top) / (spec.max - spec.min);
+    const grid = [0, 0.25, 0.5, 0.75, 1].map(ratio => {
+      const y = mappingPlot.bottom - ratio * (mappingPlot.bottom - mappingPlot.top);
+      const value = spec.min + ratio * (spec.max - spec.min);
+      return `<line class="curve-grid" x1="${mappingPlot.left}" y1="${y}" x2="${mappingPlot.right}" y2="${y}"></line><text class="curve-label" x="${mappingPlot.left - 5}" y="${y + 3}" text-anchor="end">${Number(value.toFixed(spec.precision))}</text>`;
+    }).join('');
+    const path = mapping.points.map((point, index) => `${index ? 'L' : 'M'} ${toX(point.x)} ${toY(point.y)}`).join(' ');
+    const pointMarkup = mapping.points.map((point, index) => {
+      const endpoint = index === 0 || index === mapping.points.length - 1;
+      return `<circle class="curve-point${index === selectedPointIndex ? ' selected' : ''}" cx="${toX(point.x)}" cy="${toY(point.y)}" r="${index === selectedPointIndex ? 7 : 5.5}" data-point-index="${index}" tabindex="0" role="slider" aria-label="${spec.label} curve point ${index + 1}${endpoint ? ', endpoint' : ''}" aria-valuetext="${point.x}% CPU, ${point.y} ${spec.unit}"></circle>`;
+    }).join('');
+    const cpuX = mappingPlot.left + cpu * (mappingPlot.right - mappingPlot.left) / 100;
+    chart.dataset.mappingId = currentId;
+    chart.innerHTML = `${grid}
+      <line class="curve-axis" x1="${mappingPlot.left}" y1="${mappingPlot.top}" x2="${mappingPlot.left}" y2="${mappingPlot.bottom}"></line>
+      <line class="curve-axis" x1="${mappingPlot.left}" y1="${mappingPlot.bottom}" x2="${mappingPlot.right}" y2="${mappingPlot.bottom}"></line>
+      <text class="curve-label" x="${mappingPlot.left}" y="${mappingPlot.bottom + 17}" text-anchor="middle">0%</text>
+      <text class="curve-label" x="${mappingPlot.right}" y="${mappingPlot.bottom + 17}" text-anchor="middle">100%</text>
+      <text class="curve-label" x="${mappingPlot.right}" y="11" text-anchor="end">${spec.unit}</text>
+      <line class="curve-cpu-marker" data-cpu-marker x1="${cpuX}" y1="${mappingPlot.top}" x2="${cpuX}" y2="${mappingPlot.bottom}"></line>
+      <path class="curve-line" d="${path}"></path>${pointMarkup}`;
+    editorContainer.querySelectorAll('[data-mapping-mode]').forEach(button => {
+      button.setAttribute('aria-pressed', String(button.dataset.mappingMode === mode));
+    });
+    const isVibrationMapping = currentId.startsWith('vibration-');
+    root.hidden = panelMode === 'test' && !isVibrationMapping;
+    const modeTabs = editorContainer.querySelector('.vibration-mode-tabs');
+    if (modeTabs) modeTabs.hidden = panelMode === 'test';
+    root.querySelector('.mapping-chart-wrap').hidden = panelMode === 'test' || mode !== 'curve';
+    root.querySelector('[data-add-point]').disabled = mapping.points.length >= 8 || mode !== 'curve';
+    const endpoint = selectedPointIndex === 0 || selectedPointIndex === mapping.points.length - 1;
+    root.querySelector('[data-remove-point]').disabled = endpoint || mapping.points.length <= 2 || mode !== 'curve';
+    updateMappingValueLabel(currentId);
+    const valueOutput = editorContainer.querySelector('[data-mapping-value]');
+    if (valueOutput) valueOutput.hidden = panelMode === 'test' || mode === 'constant';
+  }
+  document.querySelectorAll('[data-constant-control]').forEach(control => {
+    const mappingId = control.dataset.constantControl;
+    const mapping = cpuMappings[mappingId];
+    control.hidden = panelMode !== 'test' && (!mappingId.startsWith('vibration-') || mapping.mode !== 'constant');
+  });
+  document.querySelectorAll('[data-test-only]').forEach(control => { control.hidden = panelMode !== 'test'; });
+}
+
+function refreshMappingPreview() {
+  document.querySelectorAll('[data-cpu-marker]').forEach(marker => {
+    const chart = marker.closest('[data-mapping-chart]');
+    const cpuX = mappingPlot.left + cpu * (mappingPlot.right - mappingPlot.left) / 100;
+    marker.setAttribute('x1', cpuX);
+    marker.setAttribute('x2', cpuX);
+  });
+  document.querySelectorAll('[data-mapping-value]').forEach(output => updateMappingValueLabel(output.dataset.mappingValue));
+}
+
+function setMappingMode(mappingId, mode) {
+  cpuMappings[mappingId].mode = mode;
+  saveCpuMappings();
+  renderMappingEditor(mappingId);
+  if (mappingId === 'mouse-factor' && (wasInMouseZone || mouseRunning)) setMouseSpeedFactor(getMappingOutput(mappingId));
+}
+
+function addMappingPoint(mappingId) {
+  const mapping = cpuMappings[mappingId];
+  if (mapping.points.length >= 8) return;
+  let widestIndex = 0;
+  for (let index = 0; index < mapping.points.length - 1; index++) {
+    if (mapping.points[index + 1].x - mapping.points[index].x > mapping.points[widestIndex + 1].x - mapping.points[widestIndex].x) widestIndex = index;
+  }
+  const left = mapping.points[widestIndex];
+  const right = mapping.points[widestIndex + 1];
+  const x = Math.round((left.x + right.x) / 2);
+  if (x <= left.x || x >= right.x) return;
+  mapping.points.splice(widestIndex + 1, 0, { x, y: clampMappingValue(mappingId, evaluateCpuCurve(mapping.points, x)) });
+  selectedMappingPoints[mappingId] = widestIndex + 1;
+  saveCpuMappings();
+  renderMappingEditor(mappingId);
+}
+
+function removeMappingPoint(mappingId) {
+  const points = cpuMappings[mappingId].points;
+  const selected = selectedMappingPoints[mappingId];
+  if (selected === 0 || selected === points.length - 1 || points.length <= 2) return;
+  points.splice(selected, 1);
+  selectedMappingPoints[mappingId] = Math.min(selected, points.length - 2);
+  saveCpuMappings();
+  renderMappingEditor(mappingId);
+}
+
+function updateSelectedMappingPoint(mappingId, field, value, refocus = false) {
+  const points = cpuMappings[mappingId].points;
+  const selected = selectedMappingPoints[mappingId];
+  const point = points[selected];
+  const spec = mappingSpecs[mappingId];
+  if (field === 'x' && selected > 0 && selected < points.length - 1) {
+    point.x = Math.round(clamp(Number(value), points[selected - 1].x + 1, points[selected + 1].x - 1));
+  } else if (field === 'y') {
+    point.y = clampMappingValue(mappingId, clamp(Number(value), spec.min, spec.max));
+  }
+  saveCpuMappings();
+  renderMappingEditor(mappingId);
+  if (refocus) getMappingEditorRoot(mappingId)?.querySelector(`[data-point-index="${selected}"]`)?.focus();
+}
+
+function initializeMappingEditor() {
+  for (const [mappingId, spec] of Object.entries(mappingSpecs)) {
+    const input = document.getElementById(spec.input);
+    input.value = cpuMappings[mappingId].constant;
+    const output = document.getElementById(input.dataset.valueOutput);
+    if (output) output.textContent = input.value + (input.dataset.suffix || '');
+    input.addEventListener('input', () => {
+      cpuMappings[mappingId].constant = clampMappingValue(mappingId, input.value);
+      saveCpuMappings();
+      updateMappingValueLabel(mappingId);
+      if (mappingId === 'mouse-factor' && (panelMode === 'test' || cpuMappings[mappingId].mode === 'constant') && (wasInMouseZone || (panelMode === 'test' && mouseRunning))) {
+        setMouseSpeedFactor(cpuMappings[mappingId].constant);
+      }
+    });
+  }
+
+  document.querySelectorAll('[data-mapping-editor]').forEach(root => {
+    const eventRoot = root.closest('.vibration-parameter') || root;
+    eventRoot.addEventListener('click', event => {
+      const mappingId = getEditorMappingId(root);
+      const modeButton = event.target.closest('[data-mapping-mode]');
+      if (modeButton) setMappingMode(mappingId, modeButton.dataset.mappingMode);
+      else if (event.target.closest('[data-add-point]')) addMappingPoint(mappingId);
+      else if (event.target.closest('[data-remove-point]')) removeMappingPoint(mappingId);
+    });
+    const chart = root.querySelector('[data-mapping-chart]');
+    chart.addEventListener('pointerdown', event => {
+      const pointElement = event.target.closest('[data-point-index]');
+      const mappingId = chart.dataset.mappingId;
+      if (!pointElement || cpuMappings[mappingId].mode !== 'curve') return;
+      selectedMappingPoints[mappingId] = Number(pointElement.dataset.pointIndex);
+      mappingDrag = { mappingId, index: selectedMappingPoints[mappingId] };
+      chart.setPointerCapture(event.pointerId);
+      renderMappingEditor(mappingId);
+      event.preventDefault();
+    });
+    chart.addEventListener('pointermove', event => {
+      if (mappingDrag?.mappingId !== chart.dataset.mappingId) return;
+      updateMappingPointFromEvent(mappingDrag.mappingId, mappingDrag.index, event, chart);
+    });
+    chart.addEventListener('pointerup', () => { mappingDrag = null; });
+    chart.addEventListener('pointercancel', () => { mappingDrag = null; });
+    chart.addEventListener('click', event => {
+      const mappingId = chart.dataset.mappingId;
+      if (event.target.closest('[data-point-index]') || cpuMappings[mappingId].mode !== 'curve') return;
+      const position = getMappingPointFromEvent(event, chart);
+      const x = Math.round(clamp((position.x - mappingPlot.left) * 100 / (mappingPlot.right - mappingPlot.left), 0, 100));
+      const mapping = cpuMappings[mappingId];
+      if (mapping.points.length >= 8 || x <= 0 || x >= 100 || mapping.points.some(point => Math.abs(point.x - x) < 2)) return;
+      const index = mapping.points.findIndex(point => point.x > x);
+      const spec = mappingSpecs[mappingId];
+      const y = spec.max - (position.y - mappingPlot.top) * (spec.max - spec.min) / (mappingPlot.bottom - mappingPlot.top);
+      mapping.points.splice(index, 0, { x, y: clampMappingValue(mappingId, y) });
+      selectedMappingPoints[mappingId] = index;
+      saveCpuMappings();
+      renderMappingEditor(mappingId);
+    });
+    chart.addEventListener('keydown', event => {
+      const pointElement = event.target.closest('[data-point-index]');
+      if (!pointElement) return;
+      const mappingId = chart.dataset.mappingId;
+      const selected = Number(pointElement.dataset.pointIndex);
+      selectedMappingPoints[mappingId] = selected;
+      const point = cpuMappings[mappingId].points[selected];
+      const step = event.shiftKey ? 5 : 1;
+      if (event.key === 'ArrowLeft') updateSelectedMappingPoint(mappingId, 'x', point.x - step, true);
+      else if (event.key === 'ArrowRight') updateSelectedMappingPoint(mappingId, 'x', point.x + step, true);
+      else if (event.key === 'ArrowUp') updateSelectedMappingPoint(mappingId, 'y', point.y + mappingSpecs[mappingId].step * step, true);
+      else if (event.key === 'ArrowDown') updateSelectedMappingPoint(mappingId, 'y', point.y - mappingSpecs[mappingId].step * step, true);
+      else return;
+      event.preventDefault();
+    });
+  });
+  renderMappingEditor();
+}
+
+initializeMappingEditor();
+
 let thermalFeedbackTimer = null;
 let thermalFeedbackGeneration = 0;
+const thermalFeedbackIntervalMs = 1000;
 let vibrationFeedbackTimer = null;
 let vibrationFeedbackGeneration = 0;
 
@@ -1358,16 +1916,18 @@ function stopThermalFeedback() {
 }
 
 function startThermalFeedback() {
+  if (!feedbackEnabled) return;
   stopThermalFeedback();
   runThermalFeedback(thermalFeedbackGeneration);
 }
 
 async function runThermalFeedback(generation) {
-  if (generation !== thermalFeedbackGeneration || panelMode !== 'demo' || !wasInRightZone) return;
+  if (!feedbackEnabled || generation !== thermalFeedbackGeneration || panelMode !== 'demo' || !wasInRightZone) return;
+  const updateStartedAt = performance.now();
   await sendThermal();
-  if (generation !== thermalFeedbackGeneration || panelMode !== 'demo' || !wasInRightZone) return;
-  const duration = Number(document.getElementById('thermal-duration').value);
-  thermalFeedbackTimer = setTimeout(() => runThermalFeedback(generation), duration);
+  if (!feedbackEnabled || generation !== thermalFeedbackGeneration || panelMode !== 'demo' || !wasInRightZone) return;
+  const nextUpdateDelay = Math.max(0, thermalFeedbackIntervalMs - (performance.now() - updateStartedAt));
+  thermalFeedbackTimer = setTimeout(() => runThermalFeedback(generation), nextUpdateDelay);
 }
 
 function stopVibrationFeedback() {
@@ -1377,27 +1937,29 @@ function stopVibrationFeedback() {
 }
 
 function startVibrationFeedback() {
+  if (!feedbackEnabled) return;
   stopVibrationFeedback();
   runVibrationFeedback(vibrationFeedbackGeneration);
 }
 
 async function runVibrationFeedback(generation) {
-  if (generation !== vibrationFeedbackGeneration || panelMode !== 'demo' || !wasInVibrationZone) return;
-  const duration = Number(document.getElementById('vibration-duration').value);
-  const pulses = Number(document.getElementById('vibration-pulses').value);
-  const delay = Number(document.getElementById('vibration-delay').value);
+  if (!feedbackEnabled || generation !== vibrationFeedbackGeneration || panelMode !== 'demo' || !wasInVibrationZone) return;
+  const duration = getMappingOutput('vibration-duration');
+  const pulses = getMappingOutput('vibration-pulses');
+  const delay = getMappingOutput('vibration-delay');
   await sendVibration();
-  if (generation !== vibrationFeedbackGeneration || panelMode !== 'demo' || !wasInVibrationZone) return;
+  if (!feedbackEnabled || generation !== vibrationFeedbackGeneration || panelMode !== 'demo' || !wasInVibrationZone) return;
   const pulseBatchDuration = pulses * duration + pulses * delay;
   vibrationFeedbackTimer = setTimeout(() => runVibrationFeedback(generation), pulseBatchDuration);
 }
 
 async function sendVibration() {
+  if (panelMode === 'demo' && !feedbackEnabled) return;
   const params = new URLSearchParams({
-    pwm: document.getElementById('vibration-intensity').value,
-    'vibration-duration': document.getElementById('vibration-duration').value,
-    'nb-repetitions': document.getElementById('vibration-pulses').value,
-    'time-between-vibration': document.getElementById('vibration-delay').value
+    pwm: getOutputValue('vibration-pwm'),
+    'vibration-duration': getOutputValue('vibration-duration'),
+    'nb-repetitions': getOutputValue('vibration-pulses'),
+    'time-between-vibration': getOutputValue('vibration-delay')
   });
 
 
@@ -1411,10 +1973,10 @@ async function sendVibration() {
   } 
 }
 
-async function sendThermal() {
+async function sendThermal(pwmOverride) {
   const params = new URLSearchParams({
-    duration: document.getElementById('thermal-duration').value,
-    pwm: document.getElementById('thermal-intensity').value
+    duration: panelMode === 'demo' ? thermalFeedbackIntervalMs : document.getElementById('thermal-duration').value,
+    pwm: panelMode === 'demo' && !feedbackEnabled ? 0 : (pwmOverride ?? getOutputValue('thermal-pwm'))
   });
 
 
@@ -1430,6 +1992,7 @@ async function sendThermal() {
 }
 
 async function setMouseSpeedFactor(value) {
+  value = panelMode === 'demo' && !feedbackEnabled ? 1 : value;
   const status = document.getElementById('mouse-factor-status');
   status.textContent = 'Applying…';
   try {
@@ -1443,14 +2006,15 @@ async function setMouseSpeedFactor(value) {
 }
 
 function setMouseFeedbackActive(active) {
+  active = Boolean(active && (panelMode === 'test' || feedbackEnabled));
   const start = active ? 1 : 0;
+  const badge = document.getElementById('mouse-section-badge');
+  badge.textContent = active ? 'ACTIF' : 'INACTIF';
+  badge.classList.toggle('on', active);
   if (active) {
     if (mouseFactorInterval === null) {
       mouseFactorInterval = setInterval(() => {
-        const value = document.getElementById('mouse-speed-factor').value;
-        fetch(`http://localhost:5000/mouse/speed?value=${encodeURIComponent(value)}`)
-          .then(response => response.json())
-          .catch(error => console.error('Mouse factor refresh failed:', error));
+        setMouseSpeedFactor(getOutputValue('mouse-factor'));
       }, 1000);
     }
   } else {
@@ -1475,15 +2039,13 @@ const mcvs = document.getElementById('mouse-canvas');
 const mctx = mcvs.getContext('2d');
 
 function startMouseTracking() {
-  if (mouseRunning) return;
-  setMouseSpeedFactor(document.getElementById('mouse-speed-factor').value);
+  if (mouseRunning || (panelMode === 'demo' && !feedbackEnabled)) return;
+  setMouseSpeedFactor(getOutputValue('mouse-factor'));
   mouseRunning = true;
   mouseHistory = [];
   lastMouseX = null; lastMouseY = null; lastMouseT = null;
   document.getElementById('btn-mouse-start').disabled = true;
   document.getElementById('btn-mouse-stop').disabled  = false;
-  const badge = document.getElementById('mouse-section-badge');
-  badge.textContent = 'ACTIF'; badge.classList.add('on');
   mouseTickInt = setInterval(mouseMainTick, 80);
   setMouseFeedbackActive(true);
 }
@@ -1494,8 +2056,6 @@ function stopMouseTracking(sendRequest = true) {
   clearInterval(mouseTickInt);
   document.getElementById('btn-mouse-start').disabled = false;
   document.getElementById('btn-mouse-stop').disabled  = true;
-  const badge = document.getElementById('mouse-section-badge');
-  badge.textContent = 'INACTIF'; badge.classList.remove('on');
   document.getElementById('mouse-state-txt').textContent = 'Stopped.';
   updateMouseDisplay(0);
   mctx.clearRect(0,0,mcvs.width,mcvs.height);
