@@ -182,7 +182,7 @@ void start_thermal_pad()
 {
     analogWrite(PWM_PIN_PAD, pwm_value_thermal);
     esp_timer_stop(thermal_pad_timer);
-    esp_timer_start_once(thermal_pad_timer, pwm_duration_thermal * 1000);
+    esp_timer_start_once(thermal_pad_timer, pwm_duration_thermal * 1000ULL);
 }
 
 void toggle_erm(void *arg) {
@@ -480,14 +480,14 @@ void handle_haptics(JsonDocument json_doc) {
             pwm_duration_erm_ms = json_doc["pwm_duration_erm"].as<uint32_t>();
             pwm_pulse_delay_erm_ms = json_doc["pwm_pulse_delay_erm"].as<uint32_t>();
             
-            lv_label_set_text_fmt(label_pwm, "PWM: %d",   pwm_value_erm);
+            
             startVibration();
         }
 
         if(json_doc["pwm_value_thermal"].is<int>()){
             pwm_value_thermal = json_doc["pwm_value_thermal"].as<int>();
             pwm_duration_thermal = json_doc["pwm_duration_thermal"].as<int>();
-
+            lv_label_set_text_fmt(label_pwm, "PWM: %d",   pwm_value_thermal);
             start_thermal_pad();
         }
     // }
