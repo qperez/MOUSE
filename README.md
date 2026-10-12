@@ -10,8 +10,6 @@ Creators :
 
 ## What is MOUSE?
 
-Mouse is a haptic and pseudo haptique 
-
 MOUSE is a haptic and pseudo-haptic feedback system designed to provide a user experience related to software energy consumption.
 
 MOUSE is both a physical and software-based device. The hardware component was built using off-the-shelf components.
@@ -62,6 +60,7 @@ The project is split into five components:
 │   └── mouse_page.html        # Web control interface
 ├── http_api_documentation/
 │   └── openapi.yaml           # REST API documentation (OpenAPI 3.0)
+├── github_action_example      # GitHub action sample 
 ├── figures/                   # Visual assets
 └── README.md
 ```
@@ -94,3 +93,7 @@ A single HTML page (`mouse_page.html`) for controlling mouse speed, thermal mode
 ### API documentation (`http_api_documentation/`)
 
 An **OpenAPI 3.0** specification covering all REST endpoints: X11 mouse management, IDE/GUI thermal modes, and cyclomatic complexity metric ingestion.
+
+### GitHub Action (`github_action_example/`)
+
+Feedback can be activated remotely through HTTP requests or MQTT. We provide this example of an integration into a GitHub Actions workflow, with feedback being displayed depending on the CPU load of a workflow step.

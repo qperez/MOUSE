@@ -54,6 +54,7 @@ if __name__ == "__main__":
     from mouse_server_serial_hub.mouse.controllers.mouse_controller import mouse_bp
     from mouse_server_serial_hub.mouse.controllers.serial_controller import serial_bp
     from mouse_server_serial_hub.mouse.controllers.cyclomatic_complexity_controller import cyclomatic_complexity_bp
+    from mouse_server_serial_hub.mouse.services.mqtt_bridge_service import mqtt_to_mouse_bridge
 
     from mouse_server_serial_hub.mouse.services.mouse_service import mouse_speed_thread
 
@@ -79,6 +80,8 @@ if __name__ == "__main__":
     cyclomatic_complexity_over_serial_thread = threading.Thread(target=cyclomatic_complexity_over_serial_thread)
     cyclomatic_complexity_over_serial_thread.start()
 
+    mqtt_to_mouse_bridge_thread = threading.Thread(target=mqtt_to_mouse_bridge)
+    mqtt_to_mouse_bridge_thread.start()
 
     shared_haptic_service = SharedHapticService()
     shared_haptic_service.set_thermal_state(True)
@@ -91,5 +94,5 @@ if __name__ == "__main__":
         port=5000,
         allow_unsafe_werkzeug=True,
         debug=True,
-        use_reloader=False,  # reloader is disabled to prevent multiple mouse-speed workers  
+        use_reloader=False,  # reloader is disabled to prevent multiple mouse-speed workers
     )
