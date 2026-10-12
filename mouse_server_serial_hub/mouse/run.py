@@ -59,6 +59,7 @@ if __name__ == "__main__":
     from mouse_server_serial_hub.mouse.services.mouse_service import mouse_speed_thread
 
     from mouse_server_serial_hub.mouse.shared.shared_haptic_service import SharedHapticService
+    from mouse_server_serial_hub.mouse.shared.shared_mouse_state import SharedMouseState
 
     from mouse_server_serial_hub.mouse.services.cyclomatic_complexity_service import cyclomatic_complexity_over_serial_thread
     from mouse_server_serial_hub.mouse.services.live_cpu_service import hardware_infos_over_serial_thread
@@ -86,6 +87,9 @@ if __name__ == "__main__":
     shared_haptic_service = SharedHapticService()
     shared_haptic_service.set_thermal_state(True)
     shared_haptic_service.set_vibration_state(True)
+
+    shared_mouse_state = SharedMouseState()
+    shared_mouse_state.set_mouse_speed_state(True)
 
     socketio.start_background_task(send_cpu)
     socketio.run(

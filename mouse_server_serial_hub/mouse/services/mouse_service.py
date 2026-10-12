@@ -22,7 +22,7 @@ def mouse_speed_thread():
                 0.10,
                 shared_mouse_state.get_mouse_speed_factor(),
             )
-            print("mouse speed ",mouse_speed_value)
+            #print("mouse speed ",mouse_speed_value)
             mouse_singleton.set_mouse_speed(mouse_speed_value)
         else :
             mouse_singleton.set_mouse_speed(1)
