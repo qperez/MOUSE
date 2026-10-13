@@ -2,7 +2,7 @@
 
 Creators : 
 * Pierre-Antoine Cabaret - Rainbow Research Team, INSA Rennes, University of Rennes, IRISA
-  * ATER at INSA Rennes, France (**looking for a permanent position in academic**)
+  * ATER at INSA Rennes, France 
   * personal website: https://pcabaret.github.io/
 * Quentin Perez - DiverSE Research Team, INSA Rennes, University of Rennes, IRISA
   * Associate Professor at INSA Rennes, France
@@ -33,7 +33,7 @@ More information can be found in the Software Arhitecture section.
 * 1x Male Pins, 2.79€, https://www.conrad.fr/fr/p/barrette-male-standard-te-connectivity-ampmodu-mod-ii-826629-8-nbr-de-rangees-1-nombre-de-poles-par-rangee-8-1-pc-s-1094760.html
 * 1x USB A power Cable, 2.49€ ,https://eu.store.bambulab.com/products/usb-a-power-cable-with-ph2-0-connector
 * 1x 1kg PLA spool, 18.79€, Amazon
-* 
+
 ### 3D Models
 
 * Mouse shell: https://store.bblcdn.eu/s8/default/680ed2ecb3624801b80e00a56af25af7/3D_model_for_Wireless_Mouse_Kit-002.zip
