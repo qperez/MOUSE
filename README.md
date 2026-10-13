@@ -2,15 +2,13 @@
 
 Creators : 
 * Pierre-Antoine Cabaret - Rainbow Research Team, INSA Rennes, University of Rennes, IRISA
-  * ATER at INSA Rennes, France (**looking for a permanent position in academic**)
+  * ATER at INSA Rennes, France 
   * personal website: https://pcabaret.github.io/
 * Quentin Perez - DiverSE Research Team, INSA Rennes, University of Rennes, IRISA
   * Associate Professor at INSA Rennes, France
   * personal website: https://qperez.github.io/ 
 
 ## What is MOUSE?
-
-Mouse is a haptic and pseudo haptique 
 
 MOUSE is a haptic and pseudo-haptic feedback system designed to provide a user experience related to software energy consumption.
 
@@ -35,7 +33,7 @@ More information can be found in the Software Arhitecture section.
 * 1x Male Pins, 2.79€, https://www.conrad.fr/fr/p/barrette-male-standard-te-connectivity-ampmodu-mod-ii-826629-8-nbr-de-rangees-1-nombre-de-poles-par-rangee-8-1-pc-s-1094760.html
 * 1x USB A power Cable, 2.49€ ,https://eu.store.bambulab.com/products/usb-a-power-cable-with-ph2-0-connector
 * 1x 1kg PLA spool, 18.79€, Amazon
-* 
+
 ### 3D Models
 
 * Mouse shell: https://store.bblcdn.eu/s8/default/680ed2ecb3624801b80e00a56af25af7/3D_model_for_Wireless_Mouse_Kit-002.zip
@@ -62,6 +60,7 @@ The project is split into five components:
 │   └── mouse_page.html        # Web control interface
 ├── http_api_documentation/
 │   └── openapi.yaml           # REST API documentation (OpenAPI 3.0)
+├── github_action_example      # GitHub action sample 
 ├── figures/                   # Visual assets
 └── README.md
 ```
@@ -94,3 +93,7 @@ A single HTML page (`mouse_page.html`) for controlling mouse speed, thermal mode
 ### API documentation (`http_api_documentation/`)
 
 An **OpenAPI 3.0** specification covering all REST endpoints: X11 mouse management, IDE/GUI thermal modes, and cyclomatic complexity metric ingestion.
+
+### GitHub Action (`github_action_example/`)
+
+Feedback can be activated remotely through HTTP requests or MQTT. We provide this example of an integration into a GitHub Actions workflow, with feedback being displayed depending on the CPU load of a workflow step.

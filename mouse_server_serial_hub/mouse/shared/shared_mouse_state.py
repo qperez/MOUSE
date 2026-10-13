@@ -12,6 +12,7 @@ class SharedMouseState:
                     cls._instance = super(SharedMouseState, cls).__new__(cls)
                     cls._instance.access_lock = threading.Lock()
                     cls._instance.is_mouse_speed_activated = False
+                    cls._instance.mouse_speed_factor = 1.0
         return cls._instance
 
     def get_mouse_speed_state(self):
@@ -19,4 +20,10 @@ class SharedMouseState:
 
     def set_mouse_speed_state(self, state):
         self.is_mouse_speed_activated = state
+
+    def get_mouse_speed_factor(self):
+        return self.mouse_speed_factor
+
+    def set_mouse_speed_factor(self, factor):
+        self.mouse_speed_factor = factor
 
