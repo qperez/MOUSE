@@ -1,0 +1,4 @@
+{
+  "cyclomaticLsp.serverJar": "C:\\chemin\\vers\\deployment\\cyclomatic-lsp.jar",
+  "cyclomaticLsp.javaPath": "java"
+}

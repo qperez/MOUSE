@@ -1,0 +1,31 @@
+{
+  "name": "cyclomatic-complexity-lsp",
+  "displayName": "Cyclomatic Complexity LSP",
+  "description": "Affiche la complexité cyclomatique des méthodes Java au survol",
+  "version": "1.0.0",
+  "publisher": "irisa",
+  "license": "UNLICENSED",
+  "repository": { "type": "git", "url": "https://localhost/none" },
+  "engines": { "vscode": "^1.80.0" },
+  "categories": ["Linters", "Programming Languages"],
+  "activationEvents": ["onLanguage:java"],
+  "main": "./extension.js",
+  "dependencies": { "vscode-languageclient": "^9.0.1" },
+  "contributes": {
+    "configuration": {
+      "title": "Cyclomatic LSP",
+      "properties": {
+        "cyclomaticLsp.serverJar": {
+          "type": "string",
+          "default": "",
+          "description": "Chemin absolu du JAR. Si vide, utilise le JAR embarqué dans l'extension (server/cyclomatic-lsp.jar)."
+        },
+        "cyclomaticLsp.javaPath": {
+          "type": "string",
+          "default": "java",
+          "description": "Exécutable Java (Java 21+ requis)."
+        }
+      }
+    }
+  }
+}
