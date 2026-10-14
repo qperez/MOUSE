@@ -1,0 +1,4 @@
+{
+  "cyclomaticLsp.serverJar": "/home/qperez/PycharmProjects/PHASE/IDE_LSP_plugin/deployment/cyclomatic-lsp.jar",
+  "cyclomaticLsp.javaPath": "java"
+}
