@@ -172,7 +172,8 @@ public class CyclomaticTextDocumentService implements TextDocumentService {
     }
 
     private void sendEvent(String event, String uri, MethodComplexity mc) {
-        Map<String, Object> feedbackSettings = server.getFeedbackSettings().toPayload();
+        Map<String, Object> feedbackSettings =
+                server.getFeedbackSettings().toPayload(mc.getComplexity());
         CompletableFuture.runAsync(() -> {
             try {
                 ObjectNode node = objectMapper.createObjectNode();
@@ -193,7 +194,12 @@ public class CyclomaticTextDocumentService implements TextDocumentService {
                         .build();
 
                 HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-                LOG.debug("Event '{}' sent → HTTP {}", event, response.statusCode());
+                if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                    LOG.warn("Event '{}' rejected by feedback server: HTTP {}: {}",
+                            event, response.statusCode(), response.body());
+                } else {
+                    LOG.debug("Event '{}' sent → HTTP {}", event, response.statusCode());
+                }
             } catch (Exception e) {
                 LOG.warn("Failed to send '{}' event: {}", event, e.getMessage());
             }

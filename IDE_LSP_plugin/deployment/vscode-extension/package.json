@@ -25,6 +25,106 @@
           "default": "java",
           "description": "Exécutable Java (Java 21+ requis)."
         },
+        "cyclomaticLsp.activeProfile": {
+          "type": "string",
+          "enum": ["vibration", "thermal", "mouse", "custom"],
+          "default": "vibration",
+          "description": "Feedback profile sent to the GUI when hovering a Java method."
+        },
+        "cyclomaticLsp.profiles": {
+          "type": "object",
+          "default": {
+            "vibration": {
+              "simple": {
+                "thermal": { "enabled": false },
+                "vibration": { "enabled": true, "durationMs": 200, "pwm": 30, "pulseCount": 1, "pulseDelayMs": 200 },
+                "mouseSpeed": { "enabled": false }
+              },
+              "moderate": {
+                "thermal": { "enabled": false },
+                "vibration": { "enabled": true, "durationMs": 200, "pwm": 50, "pulseCount": 2, "pulseDelayMs": 200 },
+                "mouseSpeed": { "enabled": false }
+              },
+              "high": {
+                "thermal": { "enabled": false },
+                "vibration": { "enabled": true, "durationMs": 200, "pwm": 70, "pulseCount": 3, "pulseDelayMs": 200 },
+                "mouseSpeed": { "enabled": false }
+              },
+              "veryHigh": {
+                "thermal": { "enabled": false },
+                "vibration": { "enabled": true, "durationMs": 200, "pwm": 90, "pulseCount": 3, "pulseDelayMs": 200 },
+                "mouseSpeed": { "enabled": false }
+              }
+            },
+            "thermal": {
+              "simple": {
+                "thermal": { "enabled": true, "durationMs": 5000, "pwm": 50 },
+                "vibration": { "enabled": false },
+                "mouseSpeed": { "enabled": false }
+              },
+              "moderate": {
+                "thermal": { "enabled": true, "durationMs": 5000, "pwm": 100 },
+                "vibration": { "enabled": false },
+                "mouseSpeed": { "enabled": false }
+              },
+              "high": {
+                "thermal": { "enabled": true, "durationMs": 5000, "pwm": 150 },
+                "vibration": { "enabled": false },
+                "mouseSpeed": { "enabled": false }
+              },
+              "veryHigh": {
+                "thermal": { "enabled": true, "durationMs": 5000, "pwm": 200 },
+                "vibration": { "enabled": false },
+                "mouseSpeed": { "enabled": false }
+              }
+            },
+            "mouse": {
+              "simple": {
+                "thermal": { "enabled": false },
+                "vibration": { "enabled": false },
+                "mouseSpeed": { "enabled": true, "factor": 1 }
+              },
+              "moderate": {
+                "thermal": { "enabled": false },
+                "vibration": { "enabled": false },
+                "mouseSpeed": { "enabled": true, "factor": 0.8 }
+              },
+              "high": {
+                "thermal": { "enabled": false },
+                "vibration": { "enabled": false },
+                "mouseSpeed": { "enabled": true, "factor": 0.6 }
+              },
+              "veryHigh": {
+                "thermal": { "enabled": false },
+                "vibration": { "enabled": false },
+                "mouseSpeed": { "enabled": true, "factor": 0.4 }
+              }
+            },
+            "custom": {
+              "simple": {
+                "thermal": { "enabled": false },
+                "vibration": { "enabled": true, "durationMs": 200, "pwm": 30, "pulseCount": 1, "pulseDelayMs": 200 },
+                "mouseSpeed": { "enabled": false }
+              },
+              "moderate": {
+                "thermal": { "enabled": false },
+                "vibration": { "enabled": true, "durationMs": 200, "pwm": 50, "pulseCount": 2, "pulseDelayMs": 200 },
+                "mouseSpeed": { "enabled": false }
+              },
+              "high": {
+                "thermal": { "enabled": false },
+                "vibration": { "enabled": true, "durationMs": 200, "pwm": 70, "pulseCount": 3, "pulseDelayMs": 200 },
+                "mouseSpeed": { "enabled": false }
+              },
+              "veryHigh": {
+                "thermal": { "enabled": false },
+                "vibration": { "enabled": true, "durationMs": 200, "pwm": 90, "pulseCount": 3, "pulseDelayMs": 200 },
+                "mouseSpeed": { "enabled": false }
+              }
+            }
+          },
+          "description": "JSON feedback configuration for the four profiles. Each contains simple, moderate, high, and veryHigh bands, with thermal, vibration, and mouseSpeed settings. Profile defaults are documented in the extension README."
+        },
         "cyclomaticLsp.feedback.levels.simple.thermal.enabled": {
           "type": "boolean",
           "default": false,

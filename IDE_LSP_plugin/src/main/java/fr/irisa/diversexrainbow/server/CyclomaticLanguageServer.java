@@ -107,7 +107,9 @@ public class CyclomaticLanguageServer implements LanguageServer, LanguageClientA
 
     private void updateFeedbackSettings(Object settings, boolean refreshCurrentHover) {
         try {
-            feedbackSettings = FeedbackSettings.fromSettings(settings);
+            FeedbackSettings updatedSettings = FeedbackSettings.fromSettings(settings);
+            feedbackSettings = updatedSettings;
+            LOG.info("Applied feedback profile '{}'", updatedSettings.getActiveProfile());
             if (refreshCurrentHover) {
                 textDocumentService.refreshFeedbackForCurrentHover();
             }

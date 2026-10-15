@@ -8,7 +8,7 @@ from mouse_server_serial_hub.mouse.shared.shared_m5_state import SharedM5State
 from mouse_server_serial_hub.mouse.shared.shared_mouse_state import SharedMouseState
 from mouse_server_serial_hub.mouse.shared.feedback_profiles import (
     leave_feedback_profile,
-    select_feedback_profile,
+    validate_feedback_profile,
 )
 
 cyclomatic_complexity_bp = Blueprint('cyclomatic_complexity', __name__)
@@ -48,7 +48,7 @@ def cyclo_gui():
 def receive_complexity():
     try:
         data = request.get_json(force=True)
-
+        print(data)
         if not isinstance(data, dict):
             abort(400, "Invalid JSON body")
 
@@ -71,7 +71,7 @@ def receive_complexity():
             feedback_profile = (
                 leave_feedback_profile()
                 if event == "leave"
-                else select_feedback_profile(complexity, feedback_settings)
+                else validate_feedback_profile(complexity, feedback_settings)
             )
         except ValueError as error:
             abort(400, str(error))

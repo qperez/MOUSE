@@ -85,21 +85,78 @@ code --install-extension cyclomatic-complexity-lsp-1.0.0.vsix
 
 ```json
 {
-  "cyclomaticLsp.serverJar": "",        // Chemin vers le JAR (auto-détecté si vide)
-  "cyclomaticLsp.javaPath": "java",     // Chemin vers l'exécutable Java
-  "cyclomaticLsp.feedback.levels.moderate.vibration.enabled": true,
-  "cyclomaticLsp.feedback.levels.moderate.vibration.pwm": 50,
-  "cyclomaticLsp.feedback.levels.high.mouseSpeed.enabled": true,
-  "cyclomaticLsp.feedback.levels.high.mouseSpeed.factor": 0.8
+  "cyclomaticLsp.serverJar": "",
+  "cyclomaticLsp.javaPath": "java",
+  "cyclomaticLsp.activeProfile": "vibration",
+  "cyclomaticLsp.profiles": {
+    "vibration": {
+      "simple": {
+        "thermal": { "enabled": false },
+        "vibration": {
+          "enabled": true,
+          "durationMs": 200,
+          "pwm": 30,
+          "pulseCount": 1,
+          "pulseDelayMs": 200
+        },
+        "mouseSpeed": { "enabled": false }
+      },
+      "moderate": {
+        "thermal": { "enabled": false },
+        "vibration": {
+          "enabled": true,
+          "durationMs": 200,
+          "pwm": 50,
+          "pulseCount": 2,
+          "pulseDelayMs": 200
+        },
+        "mouseSpeed": { "enabled": false }
+      },
+      "high": {
+        "thermal": { "enabled": false },
+        "vibration": {
+          "enabled": true,
+          "durationMs": 200,
+          "pwm": 70,
+          "pulseCount": 3,
+          "pulseDelayMs": 200
+        },
+        "mouseSpeed": { "enabled": false }
+      },
+      "veryHigh": {
+        "thermal": { "enabled": false },
+        "vibration": {
+          "enabled": true,
+          "durationMs": 200,
+          "pwm": 90,
+          "pulseCount": 3,
+          "pulseDelayMs": 200
+        },
+        "mouseSpeed": { "enabled": false }
+      }
+    }
+  }
 }
 ```
 
-Les réglages `cyclomaticLsp.feedback.levels` couvrent les bandes existantes :
-`simple` (1–5), `moderate` (6–10), `high` (11–20) et `veryHigh` (21+).
-Chaque bande permet d'activer/désactiver séparément le retour thermique,
-vibratoire et de vitesse de souris. Les paramètres thermiques et vibratoires
-utilisent une durée en millisecondes et une valeur PWM de 0 à 255 ; la vibration
-ajoute le nombre d'impulsions et leur délai. Le facteur de souris est un
-multiplicateur (1 est neutre). Par défaut, la vibration conserve les valeurs
-historiques (PWM 30/50/70/90, 1/2/3/3 impulsions) et les deux autres modalités
-sont désactivées.
+`cyclomaticLsp.activeProfile` selects `vibration`, `thermal`, `mouse`, or `custom`.
+Each profile has the four complexity bands: `simple` (1–5), `moderate` (6–10),
+`high` (11–20), and `veryHigh` (21+). The complete JSON for all four profiles
+is available as the default value of `cyclomaticLsp.profiles`; edit the profile
+objects there to customize them independently.
+
+The default `thermal` profile enables thermal feedback at 5 seconds per band,
+with PWM values 50/100/150/200. The `mouse` profile enables mouse speed factors
+1.0/0.8/0.6/0.4. The `custom` profile starts as a copy of `vibration`. Disabled
+modalities only need their `enabled` flag; enabled thermal/vibration modalities
+accept `durationMs` and `pwm` (0–255), vibration also accepts `pulseCount`
+and `pulseDelayMs`, and mouse speed accepts a finite `factor` of at least 0.1.
+
+On hover, the extension posts `feedbackSettings.activeProfile`, the matched
+complexity `feedbackSettings.level`, and only that band's thermal, vibration,
+and mouse-speed settings. Disabled modalities carry only `enabled: false`;
+enabled modalities include their parameters. The method/class/signature/
+complexity fields remain available to the GUI. Changing the selected profile
+or its settings refreshes the current hover feedback. Existing
+`cyclomaticLsp.feedback.levels.*` values continue to act as a fallback when no
+profile JSON is configured.
