@@ -220,3 +220,4 @@ __marimo__/
 # Node
 node-modules/
 /IDE_LSP_plugin/deployment/vscode-extension/node_modules/
+/IDE_LSP_plugin/.idea/
