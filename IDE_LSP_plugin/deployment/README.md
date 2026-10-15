@@ -32,6 +32,10 @@ cd deployment
 ```
 Le script embarque le JAR dans l'extension (`server/cyclomatic-lsp.jar`), génère le `.vsix` et l'installe.
 Redémarrer VS Code, ouvrir un `.java`, survoler une méthode.
+Après le démarrage du serveur LSP, l'extension active automatiquement le mode
+cyclomatic de l'interface M5 via le service Python (`/metric/gui?start=1`).
+Si ce service n'est pas disponible, une notification propose **Retry** une fois
+le serveur Python démarré.
 
 ## 2. VS Code — installation manuelle
 ```bash
