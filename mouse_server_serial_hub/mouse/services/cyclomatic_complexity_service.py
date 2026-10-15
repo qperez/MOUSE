@@ -13,30 +13,40 @@ shared_haptic_service = SharedHapticService()
 
 
 def cyclomatic_complexity_over_serial_thread():
-    json_values = {
-        "class-name": "",
-        "method-name": "",
-        "signature": "",
-        "cyclomatic-complexity": ""
-    }
+    def current_state():
+        report_state = shared_cyclomatic_complexity_object.get_report_state()
+        json_values = {
+            "class-name": report_state["class_name"],
+            "method-name": report_state["method_name"],
+            "signature": report_state["signature"],
+            "cyclomatic-complexity": report_state["complexity"],
+        }
+        feedback = report_state["feedback_profile"]
+        return json_values, (tuple(json_values.items()), feedback)
+
+    _, last_state = current_state()
 
     while True:
         if shared_m5_state.get_m5_gui_mode() == "cyclo" and serial_singleton is not None:
-                if json_values["signature"] != shared_cyclomatic_complexity_object.get_signature():
-                    json_values = {
-                        "class-name" : shared_cyclomatic_complexity_object.get_class_name(),
-                        "method-name" : shared_cyclomatic_complexity_object.get_method_name(),
-                        "signature" : shared_cyclomatic_complexity_object.get_signature(),
-                        "cyclomatic-complexity" : shared_cyclomatic_complexity_object.get_cyclomatic_complexity(),
-                    }
-                    serial_singleton.write_message(json_values)
+            json_values, state = current_state()
+            feedback = state[1]
+            if state != last_state:
+                last_state = state
+                serial_singleton.write_message(json_values)
 
-                    shared_haptic_service.thermal_to_serial(shared_cyclomatic_complexity_object.get_pwm_value_thermal())
-                    shared_haptic_service.vibration_to_serial(
-                        200,
-                        shared_cyclomatic_complexity_object.get_pwm_value_erm(),
-                        shared_cyclomatic_complexity_object.get_pwm_nb_pulse_erm(),
-                        200
-                        ) #TODO : meilleur gestion du feedback
+                if feedback["active"]:
+                    thermal = feedback["thermal"]
+                    if thermal["enabled"]:
+                        shared_haptic_service.thermal_to_serial(
+                            thermal["durationMs"], thermal["pwm"]
+                        )
+                    vibration = feedback["vibration"]
+                    if vibration["enabled"]:
+                        shared_haptic_service.vibration_to_serial(
+                            vibration["durationMs"],
+                            vibration["pwm"],
+                            vibration["pulseCount"],
+                            vibration["pulseDelayMs"],
+                        )
 
         sleep(0.5)

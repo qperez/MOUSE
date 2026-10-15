@@ -79,7 +79,7 @@ code --install-extension cyclomatic-complexity-lsp-1.0.0.vsix
 | 1–5       | Simple       | ✅    | Facile à tester et maintenir               |
 | 6–10      | Modéré       | ⚠️    | Acceptable, à surveiller                   |
 | 11–20     | Élevé        | 🔴    | Difficile à tester, refactoring conseillé  |
-| 20+       | Très élevé   | ☠️    | Impossible à tester correctement           |
+| 21+       | Très élevé   | ☠️    | Impossible à tester correctement           |
 
 ## Configuration VSCode
 
@@ -87,6 +87,19 @@ code --install-extension cyclomatic-complexity-lsp-1.0.0.vsix
 {
   "cyclomaticLsp.serverJar": "",        // Chemin vers le JAR (auto-détecté si vide)
   "cyclomaticLsp.javaPath": "java",     // Chemin vers l'exécutable Java
-  "cyclomaticLsp.showDiagnostics": true // Afficher les avertissements dans Problèmes
+  "cyclomaticLsp.feedback.levels.moderate.vibration.enabled": true,
+  "cyclomaticLsp.feedback.levels.moderate.vibration.pwm": 50,
+  "cyclomaticLsp.feedback.levels.high.mouseSpeed.enabled": true,
+  "cyclomaticLsp.feedback.levels.high.mouseSpeed.factor": 0.8
 }
 ```
+
+Les réglages `cyclomaticLsp.feedback.levels` couvrent les bandes existantes :
+`simple` (1–5), `moderate` (6–10), `high` (11–20) et `veryHigh` (21+).
+Chaque bande permet d'activer/désactiver séparément le retour thermique,
+vibratoire et de vitesse de souris. Les paramètres thermiques et vibratoires
+utilisent une durée en millisecondes et une valeur PWM de 0 à 255 ; la vibration
+ajoute le nombre d'impulsions et leur délai. Le facteur de souris est un
+multiplicateur (1 est neutre). Par défaut, la vibration conserve les valeurs
+historiques (PWM 30/50/70/90, 1/2/3/3 impulsions) et les deux autres modalités
+sont désactivées.

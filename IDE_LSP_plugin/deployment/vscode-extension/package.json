@@ -24,6 +24,242 @@
           "type": "string",
           "default": "java",
           "description": "Exécutable Java (Java 21+ requis)."
+        },
+        "cyclomaticLsp.feedback.levels.simple.thermal.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable thermal feedback for complexity 1–5."
+        },
+        "cyclomaticLsp.feedback.levels.simple.thermal.durationMs": {
+          "type": "integer",
+          "default": 1000,
+          "minimum": 0,
+          "description": "Thermal pulse duration in milliseconds for complexity 1–5."
+        },
+        "cyclomaticLsp.feedback.levels.simple.thermal.pwm": {
+          "type": "integer",
+          "default": 100,
+          "minimum": 0,
+          "maximum": 255,
+          "description": "Thermal PWM value (0–255) for complexity 1–5."
+        },
+        "cyclomaticLsp.feedback.levels.simple.vibration.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable vibration feedback for complexity 1–5."
+        },
+        "cyclomaticLsp.feedback.levels.simple.vibration.durationMs": {
+          "type": "integer",
+          "default": 200,
+          "minimum": 0,
+          "description": "Vibration pulse duration in milliseconds for complexity 1–5."
+        },
+        "cyclomaticLsp.feedback.levels.simple.vibration.pwm": {
+          "type": "integer",
+          "default": 30,
+          "minimum": 0,
+          "maximum": 255,
+          "description": "Vibration PWM value (0–255) for complexity 1–5."
+        },
+        "cyclomaticLsp.feedback.levels.simple.vibration.pulseCount": {
+          "type": "integer",
+          "default": 1,
+          "minimum": 1,
+          "description": "Number of vibration pulses for complexity 1–5."
+        },
+        "cyclomaticLsp.feedback.levels.simple.vibration.pulseDelayMs": {
+          "type": "integer",
+          "default": 200,
+          "minimum": 0,
+          "description": "Delay between vibration pulses in milliseconds for complexity 1–5."
+        },
+        "cyclomaticLsp.feedback.levels.simple.mouseSpeed.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable mouse-speed feedback for complexity 1–5."
+        },
+        "cyclomaticLsp.feedback.levels.simple.mouseSpeed.factor": {
+          "type": "number",
+          "default": 1,
+          "minimum": 0.1,
+          "description": "Mouse speed factor (minimum 0.1; 1 is neutral) for complexity 1–5."
+        },
+        "cyclomaticLsp.feedback.levels.moderate.thermal.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable thermal feedback for complexity 6–10."
+        },
+        "cyclomaticLsp.feedback.levels.moderate.thermal.durationMs": {
+          "type": "integer",
+          "default": 1000,
+          "minimum": 0,
+          "description": "Thermal pulse duration in milliseconds for complexity 6–10."
+        },
+        "cyclomaticLsp.feedback.levels.moderate.thermal.pwm": {
+          "type": "integer",
+          "default": 100,
+          "minimum": 0,
+          "maximum": 255,
+          "description": "Thermal PWM value (0–255) for complexity 6–10."
+        },
+        "cyclomaticLsp.feedback.levels.moderate.vibration.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable vibration feedback for complexity 6–10."
+        },
+        "cyclomaticLsp.feedback.levels.moderate.vibration.durationMs": {
+          "type": "integer",
+          "default": 200,
+          "minimum": 0,
+          "description": "Vibration pulse duration in milliseconds for complexity 6–10."
+        },
+        "cyclomaticLsp.feedback.levels.moderate.vibration.pwm": {
+          "type": "integer",
+          "default": 50,
+          "minimum": 0,
+          "maximum": 255,
+          "description": "Vibration PWM value (0–255) for complexity 6–10."
+        },
+        "cyclomaticLsp.feedback.levels.moderate.vibration.pulseCount": {
+          "type": "integer",
+          "default": 2,
+          "minimum": 1,
+          "description": "Number of vibration pulses for complexity 6–10."
+        },
+        "cyclomaticLsp.feedback.levels.moderate.vibration.pulseDelayMs": {
+          "type": "integer",
+          "default": 200,
+          "minimum": 0,
+          "description": "Delay between vibration pulses in milliseconds for complexity 6–10."
+        },
+        "cyclomaticLsp.feedback.levels.moderate.mouseSpeed.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable mouse-speed feedback for complexity 6–10."
+        },
+        "cyclomaticLsp.feedback.levels.moderate.mouseSpeed.factor": {
+          "type": "number",
+          "default": 1,
+          "minimum": 0.1,
+          "description": "Mouse speed factor (minimum 0.1; 1 is neutral) for complexity 6–10."
+        },
+        "cyclomaticLsp.feedback.levels.high.thermal.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable thermal feedback for complexity 11–20."
+        },
+        "cyclomaticLsp.feedback.levels.high.thermal.durationMs": {
+          "type": "integer",
+          "default": 1000,
+          "minimum": 0,
+          "description": "Thermal pulse duration in milliseconds for complexity 11–20."
+        },
+        "cyclomaticLsp.feedback.levels.high.thermal.pwm": {
+          "type": "integer",
+          "default": 100,
+          "minimum": 0,
+          "maximum": 255,
+          "description": "Thermal PWM value (0–255) for complexity 11–20."
+        },
+        "cyclomaticLsp.feedback.levels.high.vibration.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable vibration feedback for complexity 11–20."
+        },
+        "cyclomaticLsp.feedback.levels.high.vibration.durationMs": {
+          "type": "integer",
+          "default": 200,
+          "minimum": 0,
+          "description": "Vibration pulse duration in milliseconds for complexity 11–20."
+        },
+        "cyclomaticLsp.feedback.levels.high.vibration.pwm": {
+          "type": "integer",
+          "default": 70,
+          "minimum": 0,
+          "maximum": 255,
+          "description": "Vibration PWM value (0–255) for complexity 11–20."
+        },
+        "cyclomaticLsp.feedback.levels.high.vibration.pulseCount": {
+          "type": "integer",
+          "default": 3,
+          "minimum": 1,
+          "description": "Number of vibration pulses for complexity 11–20."
+        },
+        "cyclomaticLsp.feedback.levels.high.vibration.pulseDelayMs": {
+          "type": "integer",
+          "default": 200,
+          "minimum": 0,
+          "description": "Delay between vibration pulses in milliseconds for complexity 11–20."
+        },
+        "cyclomaticLsp.feedback.levels.high.mouseSpeed.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable mouse-speed feedback for complexity 11–20."
+        },
+        "cyclomaticLsp.feedback.levels.high.mouseSpeed.factor": {
+          "type": "number",
+          "default": 1,
+          "minimum": 0.1,
+          "description": "Mouse speed factor (minimum 0.1; 1 is neutral) for complexity 11–20."
+        },
+        "cyclomaticLsp.feedback.levels.veryHigh.thermal.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable thermal feedback for complexity 21+."
+        },
+        "cyclomaticLsp.feedback.levels.veryHigh.thermal.durationMs": {
+          "type": "integer",
+          "default": 1000,
+          "minimum": 0,
+          "description": "Thermal pulse duration in milliseconds for complexity 21+."
+        },
+        "cyclomaticLsp.feedback.levels.veryHigh.thermal.pwm": {
+          "type": "integer",
+          "default": 100,
+          "minimum": 0,
+          "maximum": 255,
+          "description": "Thermal PWM value (0–255) for complexity 21+."
+        },
+        "cyclomaticLsp.feedback.levels.veryHigh.vibration.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable vibration feedback for complexity 21+."
+        },
+        "cyclomaticLsp.feedback.levels.veryHigh.vibration.durationMs": {
+          "type": "integer",
+          "default": 200,
+          "minimum": 0,
+          "description": "Vibration pulse duration in milliseconds for complexity 21+."
+        },
+        "cyclomaticLsp.feedback.levels.veryHigh.vibration.pwm": {
+          "type": "integer",
+          "default": 90,
+          "minimum": 0,
+          "maximum": 255,
+          "description": "Vibration PWM value (0–255) for complexity 21+."
+        },
+        "cyclomaticLsp.feedback.levels.veryHigh.vibration.pulseCount": {
+          "type": "integer",
+          "default": 3,
+          "minimum": 1,
+          "description": "Number of vibration pulses for complexity 21+."
+        },
+        "cyclomaticLsp.feedback.levels.veryHigh.vibration.pulseDelayMs": {
+          "type": "integer",
+          "default": 200,
+          "minimum": 0,
+          "description": "Delay between vibration pulses in milliseconds for complexity 21+."
+        },
+        "cyclomaticLsp.feedback.levels.veryHigh.mouseSpeed.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable mouse-speed feedback for complexity 21+."
+        },
+        "cyclomaticLsp.feedback.levels.veryHigh.mouseSpeed.factor": {
+          "type": "number",
+          "default": 1,
+          "minimum": 0.1,
+          "description": "Mouse speed factor (minimum 0.1; 1 is neutral) for complexity 21+."
         }
       }
     }

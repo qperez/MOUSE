@@ -71,6 +71,15 @@ Supprime l'extension (`irisa.cyclomatic-complexity-lsp`) et nettoie `server/`, `
 |---|---|---|
 | `cyclomaticLsp.serverJar` | `""` | Chemin du JAR ; vide = JAR embarqué |
 | `cyclomaticLsp.javaPath` | `java` | Exécutable Java (chemin complet si hors PATH) |
+| `cyclomaticLsp.feedback.levels.<band>.<modality>.enabled` | Vibration: `true`; autres: `false` | Active le retour pour `simple`, `moderate`, `high` ou `veryHigh`, et `thermal`, `vibration` ou `mouseSpeed` |
+| `...thermal.durationMs` / `...thermal.pwm` | `1000` / `100` | Durée thermique en ms et PWM (0–255) |
+| `...vibration.durationMs` / `...vibration.pwm` | `200` / 30, 50, 70 ou 90 | Durée d'impulsion en ms et PWM (0–255) |
+| `...vibration.pulseCount` / `...vibration.pulseDelayMs` | 1, 2, 3 ou 3 / `200` | Nombre d'impulsions et délai en ms |
+| `...mouseSpeed.factor` | `1` | Multiplicateur de vitesse (1 = neutre; minimum 0.1) |
+
+Les bandes restent fixes : `simple` (1–5), `moderate` (6–10), `high` (11–20)
+et `veryHigh` (21+). Les profils sont envoyés au service REST avec chaque
+événement de survol ; la vitesse de souris revient à 1 en quittant une méthode.
 
 ## Dépannage
 - **« JAR introuvable »** : renseigner `cyclomaticLsp.serverJar` ou relancer `install-vscode.sh`.

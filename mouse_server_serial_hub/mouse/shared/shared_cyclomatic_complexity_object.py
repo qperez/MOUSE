@@ -18,6 +18,7 @@ class SharedCyclomaticComplexityObject:
                     cls._instance.pwm_value_thermal = 0
                     cls._instance.pwm_value_erm = 0
                     cls._instance.pwm_nb_pulse_erm = 0
+                    cls._instance.feedback_profile = None
 
         return cls._instance
 
@@ -42,6 +43,34 @@ class SharedCyclomaticComplexityObject:
     def get_pwm_nb_pulse_erm(self):
         return self.pwm_nb_pulse_erm
 
+    def get_feedback_profile(self):
+        with self.access_lock:
+            return self.feedback_profile
+
+    def get_report_state(self):
+        with self.access_lock:
+            return {
+                "class_name": self.class_name,
+                "method_name": self.method_name,
+                "signature": self.signature,
+                "complexity": self.cyclomatic_complexity,
+                "feedback_profile": self.feedback_profile,
+            }
+
+    def update_report(self, class_name, method_name, signature, complexity, feedback_profile):
+        with self.access_lock:
+            self.class_name = class_name
+            self.method_name = method_name
+            self.signature = signature
+            self.cyclomatic_complexity = complexity
+            self.feedback_profile = feedback_profile
+
+            thermal = feedback_profile["thermal"]
+            vibration = feedback_profile["vibration"]
+            self.pwm_value_thermal = thermal["pwm"] if thermal["enabled"] else 0
+            self.pwm_value_erm = vibration["pwm"] if vibration["enabled"] else 0
+            self.pwm_nb_pulse_erm = vibration["pulseCount"] if vibration["enabled"] else 0
+
     def set_class_name(self, class_name):
         self.class_name = class_name
 
@@ -63,5 +92,7 @@ class SharedCyclomaticComplexityObject:
     def set_pwm_nb_pulse_erm(self, pwm_nb_pulse_erm):
         self.pwm_nb_pulse_erm = pwm_nb_pulse_erm
 
-
+    def set_feedback_profile(self, feedback_profile):
+        with self.access_lock:
+            self.feedback_profile = feedback_profile
 

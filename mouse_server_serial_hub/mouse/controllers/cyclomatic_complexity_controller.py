@@ -5,6 +5,11 @@ from mouse_server_serial_hub.mouse.shared.shared_cyclomatic_complexity_object im
 from mouse_server_serial_hub.mouse.shared.shared_haptic_service import SharedHapticService
 from mouse_server_serial_hub.mouse.serial_mouse.serial_singleton import SerialSingleton
 from mouse_server_serial_hub.mouse.shared.shared_m5_state import SharedM5State
+from mouse_server_serial_hub.mouse.shared.shared_mouse_state import SharedMouseState
+from mouse_server_serial_hub.mouse.shared.feedback_profiles import (
+    leave_feedback_profile,
+    select_feedback_profile,
+)
 
 cyclomatic_complexity_bp = Blueprint('cyclomatic_complexity', __name__)
 shared_cyclomatic_complexity_object = SharedCyclomaticComplexityObject()
@@ -12,6 +17,7 @@ shared_cyclomatic_complexity_object = SharedCyclomaticComplexityObject()
 shared_haptic_service = SharedHapticService()
 shared_m5_state = SharedM5State()
 serial_singleton = SerialSingleton()
+shared_mouse_state = SharedMouseState()
 
 
 @cyclomatic_complexity_bp.route("/gui")
@@ -43,7 +49,7 @@ def receive_complexity():
     try:
         data = request.get_json(force=True)
 
-        if data is None:
+        if not isinstance(data, dict):
             abort(400, "Invalid JSON body")
 
         uri         = data.get("uri")
@@ -52,46 +58,42 @@ def receive_complexity():
         signature   = data.get("signature")
         complexity  = data.get("complexity")
         start_line  = data.get("startLine")
+        event = data.get("event", "enter")
+        feedback_settings = data.get("feedbackSettings")
 
-        shared_cyclomatic_complexity_object.set_class_name(class_name)
-        shared_cyclomatic_complexity_object.set_method_name(method_name)
-        shared_cyclomatic_complexity_object.set_signature(signature)
-        shared_cyclomatic_complexity_object.set_cyclomatic_complexity(complexity)
+        if event not in ("enter", "leave"):
+            abort(400, "event must be 'enter' or 'leave'")
+        if feedback_settings is None:
+            abort(400, "feedbackSettings is required")
+        if isinstance(complexity, bool) or not isinstance(complexity, int) or complexity < 0:
+            abort(400, "complexity must be a non-negative integer")
+        try:
+            feedback_profile = (
+                leave_feedback_profile()
+                if event == "leave"
+                else select_feedback_profile(complexity, feedback_settings)
+            )
+        except ValueError as error:
+            abort(400, str(error))
 
-        #    /**
-        # * Return a human-readable risk label based on McCabe's thresholds.
-        # * 1-5:   Simple, low risk
-        # * 6-10:  Moderate complexity
-        # * 11-20: High complexity, consider refactoring
-        # * 20+:   Very high, untestable
-        # */
-        
-        # TODO : tester valeurs et paramètres pour choix modalité (avec fichier de config plugin)
-        if complexity <= 5:
-            pwm_value_erm = 30
-            pwm_nb_pulse_erm = 1
-            pwm_value_thermal = 0
-        elif 5 < complexity <= 10:
-            pwm_value_erm = 50
-            pwm_nb_pulse_erm = 2
-            pwm_value_thermal = 0
-        elif 10 < complexity <= 20:
-            pwm_value_erm = 70
-            pwm_nb_pulse_erm = 3
-            pwm_value_thermal = 0
-        else :
-            pwm_value_erm = 90
-            pwm_nb_pulse_erm = 3
-            pwm_value_thermal = 0
-
-        shared_cyclomatic_complexity_object.set_pwm_value_erm(pwm_value_erm)
-        shared_cyclomatic_complexity_object.set_pwm_nb_pulse_erm(pwm_nb_pulse_erm)
-        shared_cyclomatic_complexity_object.set_pwm_value_thermal(pwm_value_thermal)
+        shared_cyclomatic_complexity_object.update_report(
+            class_name,
+            method_name,
+            signature,
+            complexity,
+            feedback_profile,
+        )
+        mouse_speed = feedback_profile["mouseSpeed"]
+        shared_mouse_state.set_mouse_speed_factor(
+            mouse_speed["factor"]
+            if feedback_profile["active"] and mouse_speed["enabled"]
+            else 1.0
+        )
         print(f"[complexity] {method_name} → {complexity} ) @ line {start_line}")
         print(signature)
         print(uri)
 
         return jsonify(status="ok", received=data), 200
 
-    except Exception as e:
-        abort(400, str(e))
+    except (TypeError, ValueError) as error:
+        abort(400, str(error))
