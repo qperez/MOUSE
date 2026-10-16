@@ -43,7 +43,7 @@ Section in progress...
 
 ## Software Architecture
 
-![](figures/components_diagram_mouse.png)
+![](figures/components_diagram_mouse.jpg)
 
 
 ## Project structure
