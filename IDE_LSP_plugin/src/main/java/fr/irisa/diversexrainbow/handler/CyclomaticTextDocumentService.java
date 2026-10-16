@@ -35,6 +35,7 @@ public class CyclomaticTextDocumentService implements TextDocumentService {
     private final Map<String, String> documents = new HashMap<>();
 
     private MethodComplexity currentHoveredMethod = null;
+    private String currentHoveredUri = null;
 
     public CyclomaticTextDocumentService(CyclomaticLanguageServer server) {
         this.server = server;
@@ -43,6 +44,13 @@ public class CyclomaticTextDocumentService implements TextDocumentService {
 
     public void setClient(LanguageClient client) {
         this.client = client;
+    }
+
+    public void refreshFeedbackForCurrentHover() {
+        if (currentHoveredMethod != null && currentHoveredUri != null
+                && documents.containsKey(currentHoveredUri)) {
+            sendEnterEvent(currentHoveredUri, currentHoveredMethod);
+        }
     }
 
     @Override
@@ -78,9 +86,10 @@ public class CyclomaticTextDocumentService implements TextDocumentService {
         analyzer.invalidate(uri);
 
         // Leave forcé à la fermeture du fichier
-        if (currentHoveredMethod != null) {
+        if (uri.equals(currentHoveredUri) && currentHoveredMethod != null) {
             sendLeaveEvent(uri, currentHoveredMethod);
             currentHoveredMethod = null;
+            currentHoveredUri = null;
         }
 
         if (client != null) {
@@ -134,11 +143,13 @@ public class CyclomaticTextDocumentService implements TextDocumentService {
             }*/
             sendEnterEvent(uri, current);
             currentHoveredMethod = current;
+            currentHoveredUri = uri;
         } else if (current == null && currentHoveredMethod != null) {
             // On est sur du texte mais hors méthode (imports, champs, etc.)
             MethodComplexity emptyMethodComplexity = new MethodComplexity("","","",0,0,0);
             sendLeaveEvent(uri, emptyMethodComplexity);
             currentHoveredMethod = null;
+            currentHoveredUri = null;
         }
 
         if (current == null) return CompletableFuture.completedFuture(null);
@@ -161,6 +172,8 @@ public class CyclomaticTextDocumentService implements TextDocumentService {
     }
 
     private void sendEvent(String event, String uri, MethodComplexity mc) {
+        Map<String, Object> feedbackSettings =
+                server.getFeedbackSettings().toPayload(mc.getComplexity());
         CompletableFuture.runAsync(() -> {
             try {
                 ObjectNode node = objectMapper.createObjectNode();
@@ -172,6 +185,7 @@ public class CyclomaticTextDocumentService implements TextDocumentService {
                 node.put("complexity", mc.getComplexity());
                 node.put("startLine", mc.getStartLine());
                 node.put("endLine", mc.getEndLine());
+                node.set("feedbackSettings", objectMapper.valueToTree(feedbackSettings));
 
                 HttpRequest request = newBuilder()
                         .uri(java.net.URI.create(WEBHOOK_URL))
@@ -180,7 +194,12 @@ public class CyclomaticTextDocumentService implements TextDocumentService {
                         .build();
 
                 HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-                LOG.debug("Event '{}' sent → HTTP {}", event, response.statusCode());
+                if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                    LOG.warn("Event '{}' rejected by feedback server: HTTP {}: {}",
+                            event, response.statusCode(), response.body());
+                } else {
+                    LOG.debug("Event '{}' sent → HTTP {}", event, response.statusCode());
+                }
             } catch (Exception e) {
                 LOG.warn("Failed to send '{}' event: {}", event, e.getMessage());
             }

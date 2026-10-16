@@ -23,7 +23,7 @@ public class CyclomaticComplexityAnalyzer {
      * 1-5:   Simple, low risk
      * 6-10:  Moderate complexity
      * 11-20: High complexity, consider refactoring
-     * 20+:   Very high, untestable
+     * 21+:   Very high, untestable
      */
     public static final int LOW_THRESHOLD    = 5;
     public static final int MEDIUM_THRESHOLD = 10;

@@ -221,10 +221,12 @@ paths:
       summary: Submit a cyclomatic complexity report
       description: >
         Endpoint called (e.g. from an IDE plugin) to submit the cyclomatic
-        complexity of a method.
+        complexity of a method. Newer clients may also submit all four
+        `feedbackSettings.levels` profiles; the service selects the profile
+        matching the complexity and applies only enabled modalities.
 
 
-        **PWM haptic feedback** is derived from McCabe's risk thresholds:
+        The default vibration profile retains the legacy McCabe mapping:
 
         | Complexity | Risk level            | `pwm_value_erm` | `pwm_nb_pulse_erm` |
         |------------|-----------------------|-----------------|--------------------|
@@ -437,8 +439,13 @@ components:
 
     ComplexityPayload:
       type: object
-      required: [uri, className, methodName, signature, complexity, startLine]
+      required: [uri, className, methodName, signature, complexity, startLine, feedbackSettings]
       properties:
+        event:
+          type: string
+          enum: [enter, leave]
+          description: Hover lifecycle event. A configured leave event disables hover feedback and restores neutral mouse speed.
+          example: enter
         uri:
           type: string
           description: Source file URI for the method under analysis.
@@ -466,6 +473,88 @@ components:
           type: integer
           description: Start line of the method in the source file.
           example: 42
+        endLine:
+          type: integer
+          description: End line of the method in the source file.
+          example: 55
+        feedbackSettings:
+          $ref: "#/components/schemas/ComplexityFeedbackSettings"
+
+    ComplexityFeedbackSettings:
+      type: object
+      required: [levels]
+      properties:
+        levels:
+          type: object
+          required: [simple, moderate, high, veryHigh]
+          properties:
+            simple:
+              $ref: "#/components/schemas/ComplexityFeedbackLevel"
+            moderate:
+              $ref: "#/components/schemas/ComplexityFeedbackLevel"
+            high:
+              $ref: "#/components/schemas/ComplexityFeedbackLevel"
+            veryHigh:
+              $ref: "#/components/schemas/ComplexityFeedbackLevel"
+
+    ComplexityFeedbackLevel:
+      type: object
+      required: [thermal, vibration, mouseSpeed]
+      properties:
+        thermal:
+          $ref: "#/components/schemas/ThermalFeedbackSettings"
+        vibration:
+          $ref: "#/components/schemas/VibrationFeedbackSettings"
+        mouseSpeed:
+          $ref: "#/components/schemas/MouseSpeedFeedbackSettings"
+
+    ThermalFeedbackSettings:
+      type: object
+      required: [enabled, durationMs, pwm]
+      properties:
+        enabled:
+          type: boolean
+        durationMs:
+          type: integer
+          minimum: 0
+          description: Thermal output duration in milliseconds.
+        pwm:
+          type: integer
+          minimum: 0
+          maximum: 255
+
+    VibrationFeedbackSettings:
+      type: object
+      required: [enabled, durationMs, pwm, pulseCount, pulseDelayMs]
+      properties:
+        enabled:
+          type: boolean
+        durationMs:
+          type: integer
+          minimum: 0
+          description: Duration of each vibration pulse in milliseconds.
+        pwm:
+          type: integer
+          minimum: 0
+          maximum: 255
+        pulseCount:
+          type: integer
+          minimum: 1
+        pulseDelayMs:
+          type: integer
+          minimum: 0
+          description: Delay between vibration pulses in milliseconds.
+
+    MouseSpeedFeedbackSettings:
+      type: object
+      required: [enabled, factor]
+      properties:
+        enabled:
+          type: boolean
+        factor:
+          type: number
+          minimum: 0.1
+          description: Mouse speed multiplier; 1 is neutral.
 
     ComplexityResponse:
       type: object

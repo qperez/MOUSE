@@ -20,16 +20,18 @@ public class CyclomaticLanguageServer implements LanguageServer, LanguageClientA
     private LanguageClient client;
     private final CyclomaticTextDocumentService textDocumentService;
     private final CyclomaticWorkspaceService workspaceService;
+    private volatile FeedbackSettings feedbackSettings = FeedbackSettings.defaults();
     private int errorCode = 1;
 
     public CyclomaticLanguageServer() {
         this.textDocumentService = new CyclomaticTextDocumentService(this);
-        this.workspaceService = new CyclomaticWorkspaceService();
+        this.workspaceService = new CyclomaticWorkspaceService(this::updateConfiguration);
     }
 
     @Override
     public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
         LOG.info("Initializing LSP server, rootUri={}", params.getRootUri());
+        updateFeedbackSettings(params.getInitializationOptions(), false);
 
         ServerCapabilities capabilities = new ServerCapabilities();
 
@@ -93,5 +95,26 @@ public class CyclomaticLanguageServer implements LanguageServer, LanguageClientA
 
     public LanguageClient getClient() {
         return client;
+    }
+
+    public FeedbackSettings getFeedbackSettings() {
+        return feedbackSettings;
+    }
+
+    private void updateConfiguration(Object settings) {
+        updateFeedbackSettings(settings, true);
+    }
+
+    private void updateFeedbackSettings(Object settings, boolean refreshCurrentHover) {
+        try {
+            FeedbackSettings updatedSettings = FeedbackSettings.fromSettings(settings);
+            feedbackSettings = updatedSettings;
+            LOG.info("Applied feedback profile '{}'", updatedSettings.getActiveProfile());
+            if (refreshCurrentHover) {
+                textDocumentService.refreshFeedbackForCurrentHover();
+            }
+        } catch (IllegalArgumentException e) {
+            LOG.error("Ignoring invalid cyclomaticLsp feedback settings: {}", e.getMessage());
+        }
     }
 }

@@ -62,6 +62,7 @@
     </dependencies>
 
     <build>
+<!--        <sourceDirectory>${project.basedir}</sourceDirectory>-->
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -70,6 +71,9 @@
                 <configuration>
                     <source>21</source>
                     <target>21</target>
+<!--                    <includes>-->
+<!--                        <include>diversexrainbow/**/*.java</include>-->
+<!--                    </includes>-->
                 </configuration>
             </plugin>
 
