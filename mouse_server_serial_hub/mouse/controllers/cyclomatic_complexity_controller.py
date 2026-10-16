@@ -48,7 +48,7 @@ def cyclo_gui():
 def receive_complexity():
     try:
         data = request.get_json(force=True)
-        print(data)
+        
         if not isinstance(data, dict):
             abort(400, "Invalid JSON body")
 
